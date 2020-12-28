@@ -1,18 +1,20 @@
+<!--  -->
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div>
+    <m-fund></m-fund>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
-
-export default defineComponent({
-  name: 'Home',
-  components: {
-    HelloWorld,
+<script lang='ts'>
+import { reactive, toRefs } from "vue";
+import MFund from "@/components/MFund.vue";
+export default {
+  components: { MFund },
+  name: "",
+  setup() {
+    return {};
   },
-});
+};
 </script>
+<style scoped>
+</style>
