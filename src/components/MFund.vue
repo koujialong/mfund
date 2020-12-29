@@ -1,75 +1,103 @@
-<!--  -->
+<!-- sd -->
 <template>
-  <el-table :data="tableData" style="width: 100%">
-    <el-table-column label="基金名称" width="180">
-      <template #default="scope">
-        <span>{{ scope.row.date }}</span>
-      </template>
-    </el-table-column>
-    <el-table-column label="估算净值" width="180" prop="price" />
-    <el-table-column label="涨跌幅" width="180" prop="price" />
-    <el-table-column label="持有额" width="180" prop="price" />
-    <el-table-column label="估算收益" width="180" prop="price" />
-    <el-table-column label="更新时间" width="180" prop="price" />
-    <el-table-column label="操作">
-      <template #default="scope">
-        <el-button size="mini" @click="handleEdit(scope.$index, scope.row)"
-          >编辑</el-button
-        >
-        <el-button
-          size="mini"
-          type="danger"
-          @click="handleDelete(scope.$index, scope.row)"
-          >删除</el-button
-        >
-      </template>
-    </el-table-column>
-  </el-table>
+  <el-select
+    v-model="value"
+    multiple
+    filterable
+    remote
+    reserve-keyword
+    placeholder="请输入基金代码"
+    :remote-method="remoteMethod"
+    :loading="loading"
+  >
+    <el-option
+      v-for="item in options"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value"
+    >
+    </el-option>
+  </el-select>
+  <el-button type="primary" class="sub-btn" @click="addFund">确认</el-button>
+  <div v-for="item in fundList" :key="item.fundcode">{{ item.name }}</div>
 </template>
 
 <script lang='ts'>
-import { reactive, toRefs, getCurrentInstance } from "vue";
+import { reactive, toRefs, getCurrentInstance, ref, watch } from "vue";
+import { getFundData, searchFund } from "@/api/apiList";
+
+interface fundItem {
+  fundcode: string;
+  name: string;
+  jzrq: string;
+  dwjz: string;
+  gsz: string;
+  gszzl: string;
+  gztime: string;
+}
+
 export default {
   name: "MFund",
-  setup() {
-    //@ts-ignore
-    let { ctx } = getCurrentInstance();
-    console.log(ctx);
-
-    const tableData = reactive([
-      {
-        date: "2016-05-02",
-        name: "王小虎",
-        address: "上海市普陀区金沙江路 1518 弄",
-        price: 1.2,
-      },
-      {
-        date: "2016-05-04",
-        name: "王小虎",
-        address: "上海市普陀区金沙江路 1517 弄",
-        price: 1.4,
-      },
-      {
-        date: "2016-05-01",
-        name: "王小虎",
-        address: "上海市普陀区金沙江路 1519 弄",
-        price: 2.0,
-      },
-      {
-        date: "2016-05-03",
-        name: "王小虎",
-        address: "上海市普陀区金沙江路 1516 弄",
-        price: 1.9,
-      },
-    ]);
-
-    ctx.$http.get("/js/001186.js?rt=1463558676006");
-    return { tableData };
+  data() {
+    return {
+      value: [],
+      loading: false,
+      options: [{}],
+      fundList: new Set<fundItem>(),
+    };
   },
   mounted() {
-    console.log(this);
+    let fundStr = window.localStorage.getItem("fund_list") || "{}";
+    this.fundList = JSON.parse(fundStr) || new Set<fundItem>();
+  },
+  methods: {
+    async remoteMethod(this: any, query: string) {
+      if (query !== "") {
+        this.loading = true;
+        let res: any = await searchFund(query).catch((err: Error) => {
+          this.loading = false;
+        });
+        this.loading = false;
+        this.options = res.Datas.map((item: any) => {
+          return {
+            value: item._id,
+            label: item.NAME,
+          };
+        });
+      } else {
+        this.options = [];
+      }
+    },
+    addFund(this: any) {
+      this.value.forEach((item: any) => {
+        this.fundList.add({
+          fundcode: item,
+        });
+      });
+      this.value = [];
+      console.log(this.fundList);
+      window.localStorage.setItem("fund_list", JSON.stringify(this.fundList));
+      this.updataFundList();
+    },
+
+    updataFundList() {
+      this.fundList.forEach(async (item: fundItem) => {
+        let res: any = await getFundData(item.fundcode);
+        eval(res);
+        function jsonpgz(obj: Object) {
+          item = Object.assign(item, obj);
+        }
+      });
+    },
   },
 };
 </script>
 <style scoped>
+.el-select {
+  width: 400px;
+  margin: 40px 0px;
+}
+.sub-btn {
+  margin-left: 20px;
+}
 </style>

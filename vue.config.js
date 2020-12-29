@@ -1,4 +1,3 @@
-import config from "@/api/config";
 module.exports = {
     devServer: {
         host: 'localhost',
@@ -7,11 +6,18 @@ module.exports = {
         open: true, // 配置自动启动浏览器
         proxy: {
             // 配置多个跨域
-            [config.baseurl.dev]: {
+            '/base': {
                 target: 'http://fundgz.1234567.com.cn',//跨域接口的地址
                 changeOrigin: true,
                 pathRewrite: {
-                    [`^/${config.baseurl.dev}`]: '/'
+                    '^/base': ''
+                }
+            },
+            '/search': {
+                target: 'https://fundsuggest.eastmoney.com',//跨域接口的地址
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/search': ''
                 }
             }
         },
