@@ -4,7 +4,8 @@ import {
     ElOption,
     ElSelect,
     ElTable,
-    ElTableColumn
+    ElTableColumn,
+    ElTag
 } from 'element-plus'
 import App from './App.vue'
 export function useElements(app: any) {
@@ -14,4 +15,5 @@ export function useElements(app: any) {
     app.component(ElTableColumn.name, ElTableColumn)
     app.component(ElSelect.name, ElSelect)
     app.component(ElOption.name, ElOption)
+    app.component(ElTag.name, ElTag)
 }

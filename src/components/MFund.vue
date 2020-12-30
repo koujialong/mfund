@@ -1,4 +1,4 @@
-<!-- sd -->
+<!-- 基金 -->
 <template>
   <el-select
     v-model="value"
@@ -19,6 +19,13 @@
     </el-option>
   </el-select>
   <el-button type="primary" class="sub-btn" @click="addFund">确认</el-button>
+  <el-button
+    type="danger"
+    style="margin-left: 100px"
+    :icon="loading ? 'el-icon-loading' : 'el-icon-refresh'"
+    @click="updataFundList(true)"
+    >点击刷新：{{ timeStr }}</el-button
+  >
   <el-table :data="fundList" border style="margin-left: 20px; width: auto">
     <el-table-column label="基金代码" width="100">
       <template #default="scope">
@@ -30,13 +37,13 @@
         <span>{{ scope.row.name }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有份额" width="200">
+    <el-table-column label="持有份额" width="140">
       <template #default="scope">
         <el-input v-model="scope.row.hold" v-if="scope.row.isEdit" />
         <span v-else>{{ scope.row.hold }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有总额" width="200">
+    <el-table-column label="持有总额" width="140">
       <template #default="scope">
         <span>{{ scope.row.holdPrice }}</span>
       </template>
@@ -46,17 +53,28 @@
         <span>{{ scope.row.dwjz }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估算净值" width="100" color="red">
+    <el-table-column label="估算净值" width="100">
       <template #default="scope">
         <span>{{ scope.row.gsz }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估值" width="100">
+    <el-table-column label="涨跌幅" width="100">
       <template #default="scope">
-        <span>{{ scope.row.gszzl }}</span>
+        <span :style="`color: ${scope.row.gszzl >= 0 ? 'red' : 'green'}`"
+          >{{
+            scope.row.gszzl >= 0 ? `+${scope.row.gszzl}` : scope.row.gszzl
+          }}%</span
+        >
       </template>
     </el-table-column>
-    <el-table-column label="估值时间" width="140">
+    <el-table-column label="预估收益" width="100">
+      <template #default="scope">
+        <span :style="`color: ${scope.row.gzsy >= 0 ? 'red' : 'green'}`">{{
+          scope.row.gzsy >= 0 ? `+${scope.row.gzsy}` : scope.row.gzsy
+        }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column label="估值时间" width="150">
       <template #default="scope">
         <span>{{ scope.row.gztime }}</span>
       </template>
@@ -75,11 +93,19 @@
       </template>
     </el-table-column>
   </el-table>
+  <el-tag type="danger" effect="dark"> 持仓总额：{{ rental }} </el-tag>
+  <el-tag :type="allProfit >= 0 ? 'danger' : 'success'" effect="dark">
+    预估总收益：{{ allProfit >= 0 ? `+${allProfit}` : allProfit }}
+  </el-tag>
+  <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
+    预估总收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
+  </el-tag>
 </template>
 
 <script lang='ts'>
 import { reactive, toRefs, getCurrentInstance, ref, watch, toRaw } from "vue";
 import { getFundData, searchFund } from "@/api/apiList";
+import { formatDateTime } from "@/utils/utils";
 
 interface fundItem {
   fundcode: string;
@@ -87,11 +113,12 @@ interface fundItem {
   jzrq: string;
   dwjz: number;
   gsz: string;
-  gszzl: string;
+  gszzl: number;
   gztime: string;
   isEdit: boolean;
   hold: number;
   holdPrice: number;
+  gzsy: number;
 }
 
 export default {
@@ -102,6 +129,9 @@ export default {
       loading: false,
       options: [{}],
       fundList: new Array<fundItem>(),
+      allProfit: 0,
+      rental: 0,
+      rentalRatio: 0,
     };
   },
   mounted(this: any) {
@@ -139,26 +169,78 @@ export default {
       });
       this.value = [];
       this.updataLocalFundList();
-      this.updataFundList();
+      this.updataFundList(true);
     },
 
-    updataFundList(this: any) {
-      this.fundList.forEach(async (item: fundItem) => {
-        let res: any = await getFundData(item.fundcode);
-        eval(res);
-        function jsonpgz(obj: Object) {
-          item = Object.assign(item, obj);
-          item.hold || (item.hold = 0);
-          item.holdPrice = Number((item.hold * item.dwjz).toFixed(2));
-        }
-      });
+    async updataFundList(this: any, isLoading: boolean = false) {
+      this.isOpen || (this.isOpen = this.checkIsOpen());
+      if ((this.isOpen() && !this.loading) || isLoading) {
+        let allProfit: number = 0;
+        let rental: number = 0;
+        let fundReqList = this.fundList.map((item: fundItem) => {
+          return getFundData(item.fundcode);
+        });
+        this.loading = true;
+        let resList: any = await Promise.all(fundReqList).catch(() => {
+          this.loading = false;
+        });
+        let that = this;
+        resList.forEach((res: any, index: number) => {
+          eval(res);
+          function jsonpgz(obj: Object) {
+            let item = that.fundList[index];
+            item = Object.assign(item, obj);
+            //持有份额
+            item.hold || (item.hold = 0);
+            //持有总额
+            item.holdPrice = Number((item.hold * item.dwjz).toFixed(2));
+            //估值收益
+            item.gzsy = Number((item.holdPrice * item.gszzl * 0.01).toFixed(2));
+            //总收益计算
+            allProfit = Number((allProfit + item.gzsy).toFixed(2));
+            //持仓总额
+            rental = Number((rental + item.holdPrice).toFixed(2));
+            if (index === resList.length - 1) {
+              that.allProfit = allProfit;
+              that.rental = rental;
+              that.rentalRatio = ((allProfit / rental) * 100).toFixed(2);
+            }
+          }
+        });
+        //延迟加载效果
+        setTimeout(() => {
+          this.loading = false;
+        }, 1000);
+      }
+    },
+
+    /**
+     * 判断当前是否开盘
+     */
+    checkIsOpen() {
+      let now = new Date();
+      let nowTime = now.getTime();
+      let year = now.getFullYear();
+      let month = now.getMonth() + 1;
+      let date = now.getDate();
+      let hour = now.getHours();
+      let minute = now.getMinutes();
+      let startStr = year + "/" + month + "/" + date + " " + "9:30:00";
+      let startTime = Date.parse(startStr);
+      return function (this: any) {
+        let now = new Date();
+        let nowTime = now.getTime();
+        this.timeStr = formatDateTime(now);
+        return nowTime >= startTime && hour < 15;
+      };
     },
 
     startTimer(this: any) {
-      this.updataFundList();
+      this.updataFundList(true);
+      this.timer && this.timer.clearInterval();
       this.timmer = setInterval(() => {
         this.updataFundList();
-      }, 5000);
+      }, 10000);
     },
 
     handleDelete(this: any, index: number, item: fundItem) {
@@ -170,13 +252,18 @@ export default {
       window.localStorage.setItem("fund_list", JSON.stringify(this.fundList));
     },
     handleEdit(this: any, index: number, item: fundItem) {
+      this.fundList.forEach((item: any) => {
+        let fundItem = item as fundItem;
+        console.log(fundItem.fundcode != item.fundcode);
+        fundItem.fundcode != item.fundcode && (fundItem.isEdit = false);
+      });
       if (item.isEdit) {
         item.isEdit = false;
-        this.updataLocalFundList();
-        this.updataFundList();
       } else {
         item.isEdit = true;
       }
+      this.updataLocalFundList();
+      this.updataFundList(true);
     },
   },
   beforeUnmount(this: any) {
@@ -191,5 +278,8 @@ export default {
 }
 .sub-btn {
   margin-left: 20px;
+}
+.el-tag {
+  margin: 20px 0 20px 20px;
 }
 </style>
