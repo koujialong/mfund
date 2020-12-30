@@ -1,6 +1,6 @@
 module.exports = {
     devServer: {
-        host: 'localhost',
+        host: '0.0.0.0',
         port: 8081, // 端口号
         https: false, // https:{type:Boolean}
         open: true, // 配置自动启动浏览器

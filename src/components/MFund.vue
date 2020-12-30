@@ -9,6 +9,8 @@
     placeholder="请输入基金代码"
     :remote-method="remoteMethod"
     :loading="loading"
+    loading-text="正在查找基金..."
+    no-data-text="未查找到基金"
   >
     <el-option
       v-for="item in options"
@@ -32,9 +34,15 @@
         <span>{{ scope.row.fundcode }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="基金名称" width="300">
+    <el-table-column label="基金名称" width="240">
       <template #default="scope">
         <span>{{ scope.row.name }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column label="持仓成本价" width="140">
+      <template #default="scope">
+        <el-input v-model="scope.row.cccb" v-if="scope.row.isEdit" />
+        <span v-else>{{ scope.row.cccb }}</span>
       </template>
     </el-table-column>
     <el-table-column label="持有份额" width="140">
@@ -46,6 +54,22 @@
     <el-table-column label="持有总额" width="140">
       <template #default="scope">
         <span>{{ scope.row.holdPrice }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column label="持仓收益" width="100">
+      <template #default="scope">
+        <span :style="`color: ${scope.row.ccsy >= 0 ? 'red' : 'green'}`">{{
+          scope.row.ccsy >= 0 ? `+${scope.row.ccsy}` : scope.row.ccsy
+        }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column label="持仓收益率" width="100">
+      <template #default="scope">
+        <span :style="`color: ${scope.row.ccsyl >= 0 ? 'red' : 'green'}`"
+          >{{
+            scope.row.ccsyl >= 0 ? `+${scope.row.ccsyl}` : scope.row.ccsyl
+          }}%</span
+        >
       </template>
     </el-table-column>
     <el-table-column label="单位净值" width="100">
@@ -67,7 +91,7 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="预估收益" width="100">
+    <el-table-column label="当日预估收益" width="120">
       <template #default="scope">
         <span :style="`color: ${scope.row.gzsy >= 0 ? 'red' : 'green'}`">{{
           scope.row.gzsy >= 0 ? `+${scope.row.gzsy}` : scope.row.gzsy
@@ -93,12 +117,22 @@
       </template>
     </el-table-column>
   </el-table>
+  <span class="info-tag">总额数据：</span>
   <el-tag type="danger" effect="dark"> 持仓总额：{{ rental }} </el-tag>
   <el-tag :type="allProfit >= 0 ? 'danger' : 'success'" effect="dark">
-    预估总收益：{{ allProfit >= 0 ? `+${allProfit}` : allProfit }}
+    持仓总收益：{{ allProfit >= 0 ? `+${allProfit}` : allProfit }}
+  </el-tag>
+  <el-tag :type="allProfitRatio >= 0 ? 'danger' : 'success'" effect="dark">
+    持仓总收益率：{{
+      allProfitRatio >= 0 ? `+${allProfitRatio}` : allProfitRatio
+    }}%
+  </el-tag>
+  <span class="info-tag" style="margin-left: 100px">当日数据：</span>
+  <el-tag :type="dayProfit >= 0 ? 'danger' : 'success'" effect="dark">
+    当日预估收益：{{ dayProfit >= 0 ? `+${dayProfit}` : dayProfit }}
   </el-tag>
   <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
-    预估总收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
+    当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
 </template>
 
@@ -119,6 +153,9 @@ interface fundItem {
   hold: number;
   holdPrice: number;
   gzsy: number;
+  cccb: number;
+  ccsy: number;
+  ccsyl: number;
 }
 
 export default {
@@ -127,11 +164,13 @@ export default {
     return {
       value: [],
       loading: false,
-      options: [{}],
+      options: [{ disabled: true }],
       fundList: new Array<fundItem>(),
       allProfit: 0,
+      dayProfit: 0,
       rental: 0,
       rentalRatio: 0,
+      allProfitRatio: 0,
     };
   },
   mounted(this: any) {
@@ -151,14 +190,21 @@ export default {
           this.loading = false;
         });
         this.loading = false;
-        this.options = res.Datas.map((item: any) => {
-          return {
-            value: item._id,
-            label: item.NAME,
-          };
-        });
+        if (res.Datas.length > 0) {
+          const options = res.Datas.map((item: any) => {
+            return {
+              value: item._id,
+              label: item.NAME,
+            };
+          });
+          this.options = options.length > 0 ? options : [{ disabled: true }];
+        } else {
+          this.options = [{ disabled: true }];
+        }
+        console.log("选项", this.options);
       } else {
-        this.options = [];
+        this.loading = false;
+        this.options = [{ disabled: true }];
       }
     },
     addFund(this: any) {
@@ -175,8 +221,9 @@ export default {
     async updataFundList(this: any, isLoading: boolean = false) {
       this.isOpen || (this.isOpen = this.checkIsOpen());
       if ((this.isOpen() && !this.loading) || isLoading) {
-        let allProfit: number = 0;
+        let dayProfit: number = 0;
         let rental: number = 0;
+        let allProfit: number = 0;
         let fundReqList = this.fundList.map((item: fundItem) => {
           return getFundData(item.fundcode);
         });
@@ -190,20 +237,41 @@ export default {
           function jsonpgz(obj: Object) {
             let item = that.fundList[index];
             item = Object.assign(item, obj);
+            //持仓成本价
+            item.cccb || (item.cccb = item.dwjz);
             //持有份额
             item.hold || (item.hold = 0);
+            item.ccsyl || (item.ccsyl = 0);
             //持有总额
             item.holdPrice = Number((item.hold * item.dwjz).toFixed(2));
-            //估值收益
+            //当日估值收益
             item.gzsy = Number((item.holdPrice * item.gszzl * 0.01).toFixed(2));
             //总收益计算
-            allProfit = Number((allProfit + item.gzsy).toFixed(2));
+            dayProfit = Number((dayProfit + item.gzsy).toFixed(2));
             //持仓总额
             rental = Number((rental + item.holdPrice).toFixed(2));
+            //持仓收益
+            item.ccsy = Number(
+              ((item.dwjz - item.cccb) * item.hold).toFixed(2)
+            );
+            //持仓收益
+            item.ccsyl = item.holdPrice
+              ? Number(
+                  ((item.ccsy / (item.holdPrice - item.ccsy)) * 100).toFixed(2)
+                )
+              : 0;
+            //持仓总收益
+            allProfit = Number((allProfit + item.ccsy).toFixed(2));
+            // //持仓总收益
+            // allProfit = Number((allProfit + item.ccsy).toFixed(2));
             if (index === resList.length - 1) {
-              that.allProfit = allProfit;
+              that.dayProfit = dayProfit;
               that.rental = rental;
-              that.rentalRatio = ((allProfit / rental) * 100).toFixed(2);
+              that.rentalRatio = ((dayProfit / rental) * 100).toFixed(2);
+              that.allProfit = allProfit;
+              that.allProfitRatio = Number(
+                ((allProfit / (rental - allProfit)) * 100).toFixed(2)
+              );
             }
           }
         });
@@ -281,5 +349,12 @@ export default {
 }
 .el-tag {
   margin: 20px 0 20px 20px;
+}
+.info-tag {
+  height: 32px;
+  margin-top: 2px;
+  color: #f56c6c;
+  font-size: 16px;
+  margin-left: 20px;
 }
 </style>
