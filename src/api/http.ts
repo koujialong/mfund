@@ -4,23 +4,12 @@ import { getCurrentInstance } from "vue";
 import { baseBean } from "@/bean/baseBean";
 
 const instanceBase: AxiosInstance = axios.create({
-    baseURL: '/base',
     timeout: 60000,
 });
-
-const instanceSearch: AxiosInstance = axios.create({
-    baseURL: '/search',
-    timeout: 60000,
-});
-
-export enum baseType {
-    BASE,
-    SEARCH
-}
 
 //get请求
-export function get(url: string, { params = {}, type = baseType.BASE } = {}) {
-    const instance = getInstacne(type);
+export function get(url: string, params = {}) {
+    const instance = instanceBase;
     return new Promise((resolve, reject) => {
         instance
             .get(url, {
@@ -37,8 +26,8 @@ export function get(url: string, { params = {}, type = baseType.BASE } = {}) {
     });
 }
 //post请求
-export function post(url: string, { data = {}, type = baseType.BASE } = {}) {
-    const instance = getInstacne(type);
+export function post(url: string, data = {}) {
+    const instance = instanceBase;
     return new Promise((resolve, reject) => {
         instance.post(url, data).then(
             (response) => {
@@ -49,16 +38,6 @@ export function post(url: string, { data = {}, type = baseType.BASE } = {}) {
             }
         );
     });
-}
-
-function getInstacne(type: baseType) {
-    switch (type) {
-        case baseType.SEARCH:
-            console.log('search api');
-            return instanceSearch
-        default:
-            return instanceBase
-    }
 }
 
 export default {

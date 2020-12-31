@@ -6,7 +6,7 @@
     filterable
     remote
     reserve-keyword
-    placeholder="请输入基金代码"
+    placeholder="请输入基金名称或代码"
     :remote-method="remoteMethod"
     :loading="loading"
     loading-text="正在查找基金..."
@@ -134,12 +134,14 @@
   <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
     当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
+  <market />
 </template>
 
 <script lang='ts'>
 import { reactive, toRefs, getCurrentInstance, ref, watch, toRaw } from "vue";
 import { getFundData, searchFund } from "@/api/apiList";
 import { formatDateTime } from "@/utils/utils";
+import Market from "@/components/Market.vue";
 
 interface fundItem {
   fundcode: string;
@@ -160,6 +162,9 @@ interface fundItem {
 
 export default {
   name: "MFund",
+  components: {
+    Market,
+  },
   data() {
     return {
       value: [],
@@ -189,15 +194,19 @@ export default {
         let res: any = await searchFund(query).catch((err: Error) => {
           this.loading = false;
         });
-        this.loading = false;
         if (res.Datas.length > 0) {
-          const options = res.Datas.map((item: any) => {
+          const options = res.Datas.filter((remoteItem: any) => {
+            return !this.fundList.some((item: fundItem) => {
+              return item.fundcode == remoteItem.CODE;
+            });
+          }).map((item: any) => {
             return {
-              value: item._id,
+              value: item.CODE,
               label: item.NAME,
             };
           });
           this.options = options.length > 0 ? options : [{ disabled: true }];
+          this.loading = false;
         } else {
           this.options = [{ disabled: true }];
         }
