@@ -134,15 +134,20 @@
   <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
     当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
-  <market />
+  <div style="display: flex">
+    <index-detail />
+    <market-line />
+    <market-bar />
+  </div>
 </template>
 
 <script lang='ts'>
 import { reactive, toRefs, getCurrentInstance, ref, watch, toRaw } from "vue";
 import { getFundData, searchFund } from "@/api/apiList";
 import { formatDateTime } from "@/utils/utils";
-import Market from "@/components/Market.vue";
-
+import MarketBar from "@/components/MarketBar.vue";
+import MarketLine from "@/components/MarketLine.vue";
+import IndexDetail from "@/components/IndexDetail.vue";
 interface fundItem {
   fundcode: string;
   name: string;
@@ -163,7 +168,9 @@ interface fundItem {
 export default {
   name: "MFund",
   components: {
-    Market,
+    MarketBar,
+    MarketLine,
+    IndexDetail,
   },
   data() {
     return {

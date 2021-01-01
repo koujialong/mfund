@@ -5,14 +5,14 @@
 
 <script lang='ts'>
 import { getCurrentInstance, reactive, toRefs } from "vue";
-import { getMarketChart } from "@/api/apiList";
+import { getMarketBar } from "@/api/apiList";
 import * as echart from "echarts";
 interface barItem {
   f14: string; //名称
   f62: number; //流入流出金额
 }
 export default {
-  name: "marketChart",
+  name: "marketBar",
   data() {
     return {};
   },
@@ -29,24 +29,33 @@ export default {
             )}亿元`;
           },
         },
+        title: {
+          text: "行业板块资金流向",
+          textStyle: {
+            fontSize: 16,
+            color: "#f56c6c",
+          },
+          x: "center",
+        },
         grid: {
-          top: 30,
+          top: 60,
           bottom: 100,
           right: 40,
           left: 60,
         },
         dataZoom: [
           {
+            type: "slider",
             show: true,
-            realtime: true,
+            xAxisIndex: [0],
             start: 0,
-            end: 50,
+            end: 30,
           },
           {
             type: "inside",
-            realtime: true,
-            start: 0,
-            end: 50,
+            xAxisIndex: [0],
+            start: 1,
+            end: 30,
           },
         ],
         xAxis: {
@@ -61,6 +70,7 @@ export default {
         },
         yAxis: {
           type: "value",
+          name: "单位：亿元",
           data: [],
           axisLabel: {
             formatter: (val: any) => {
@@ -81,7 +91,7 @@ export default {
 
     async getChartData(this: any) {
       let that = this;
-      const res: any = await getMarketChart();
+      const res: any = await getMarketBar();
       let dataList: barItem[] = res.data.diff;
       let xdata: any[] = [];
       let sdata: any[] = [];
@@ -100,6 +110,18 @@ export default {
                 color: function (data: any) {
                   return data.value > 0 ? "#f56c6c" : "#4eb61b";
                 },
+                label: {
+                  show: true, //开启显示
+                  position: "top", //在上方显示
+                  textStyle: {
+                    //数值样式
+                    color: "black",
+                    fontSize: 10,
+                  },
+                  formatter: (params: any) => {
+                    return (params.value / 100000000).toFixed(2);
+                  },
+                },
               },
             },
           },
@@ -115,7 +137,8 @@ export default {
 </script>
 <style scoped>
 .chart-content {
-  width: 600px;
+  width: 520px;
   height: 400px;
+  margin-top: 20px;
 }
-</style>
+</style> 
