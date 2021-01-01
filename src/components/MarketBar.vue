@@ -38,7 +38,7 @@ export default {
           x: "center",
         },
         grid: {
-          top: 60,
+          top: 70,
           bottom: 100,
           right: 40,
           left: 60,
@@ -137,8 +137,8 @@ export default {
 </script>
 <style scoped>
 .chart-content {
-  width: 520px;
-  height: 400px;
+  width: 600px;
+  height: 440px;
   margin-top: 20px;
 }
 </style> 

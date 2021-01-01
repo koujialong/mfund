@@ -8,6 +8,7 @@ import { reactive, toRefs } from "vue";
 import * as echarts from "echarts";
 import { getIndexChart } from "@/api/apiList";
 import { indexList } from "@/utils/constant";
+import { time_arr } from "@/utils/utils";
 export default {
   name: "",
   data() {
@@ -16,10 +17,21 @@ export default {
     };
   },
   methods: {
-    init(this: any) {
+    init(this: any, val: any) {
+      this.code = val.f13 + "." + val.f12;
+      this.codeData = val;
+
       this.chartEL = this.$refs.mainCharts;
       this.myChart = echarts.init(this.chartEL);
       this.option = {
+        title: {
+          text: "上证指数",
+          textStyle: {
+            fontSize: 16,
+            color: "#f56c6c",
+          },
+          x: "center",
+        },
         tooltip: {
           trigger: "axis",
           axisPointer: {
@@ -42,8 +54,8 @@ export default {
             return `时间：${p[0].name}<br />价格：${
               this.dataList[p[0].dataIndex][1]
             }<br />涨幅：${(
-              ((this.dataList[p[0].dataIndex][1] - this.DWJZ) * 100) /
-              this.DWJZ
+              ((this.dataList[p[0].dataIndex][1] - this.prePrice) * 100) /
+              this.prePrice
             ).toFixed(
               2
             )}%<br /><span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color}"></span>成交量：${this.formatNum(
@@ -56,7 +68,7 @@ export default {
         },
         grid: [
           {
-            top: 20,
+            top: 40,
             left: 60,
             height: "50%",
           },
@@ -64,7 +76,7 @@ export default {
             show: true,
             left: 60,
             top: "65%",
-            height: "28%", //交易量图的高度
+            height: "20%", //交易量图的高度
           },
         ],
         xAxis: [
@@ -141,6 +153,42 @@ export default {
                 },
               },
             },
+          },
+          {
+            type: "value",
+            axisLabel: {
+              color: this.yAxisLabelColor,
+              formatter: (val: number) => {
+                let num = (
+                  ((val - this.prePrice) * 100) /
+                  this.prePrice
+                ).toFixed(2);
+                if ("" + num == "-0.0") {
+                  num = "0.00";
+                }
+                return num + "%";
+              },
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                type: "dashed",
+                color: this.defaultColor,
+              },
+            },
+            axisPointer: {
+              show: true,
+              label: {
+                formatter: (p: any) => {
+                  return (
+                    (((p.value - this.prePrice) * 100) / this.prePrice).toFixed(
+                      2
+                    ) + "%"
+                  );
+                },
+              },
+            },
+            data: [],
           },
           {
             //交易图
@@ -242,16 +290,150 @@ export default {
     async getData(this: any) {
       const res: any = await getIndexChart(indexList[0].value);
       this.prePrice = res.data.prePrice;
+      let dataList = res.data.trends.map((itme: any) => itme.split(","));
+      this.dataList = dataList;
+      this.option.series[0].data = dataList.map((item: any) => +item[1]);
+      this.option.series[1].data = dataList.map((item: any) => +item[1]);
+      this.option.series[2].data = dataList.map((item: any) => +item[2]);
+
+      let firstDate = dataList[0][0].substr(11, 5);
+      this.isHK = false;
+
+      if (this.codeData.f13 == 1 || this.codeData.f13 == 0) {
+        this.timeData = time_arr("hs");
+        this.option.xAxis[0].axisLabel = {
+          formatter: this.fmtAxis,
+          interval: this.fmtVal,
+        };
+        this.option.xAxis[1].axisLabel = {
+          formatter: this.fmtAxis,
+          interval: this.fmtVal,
+        };
+      } else {
+        switch (firstDate) {
+          case "09:30":
+            this.timeData = this.time_arr("hk");
+            this.isHK = true;
+            this.option.xAxis[0].axisLabel = {
+              formatter: this.fmtAxis,
+              interval: this.fmtVal,
+            };
+            this.option.xAxis[1].axisLabel = {
+              formatter: this.fmtAxis,
+              interval: this.fmtVal,
+            };
+            break;
+          case "21:30":
+            this.timeData = this.time_arr("us-s");
+            break;
+          case "22:30":
+            this.timeData = this.time_arr("us-w");
+            break;
+
+          default:
+            break;
+        }
+      }
+      this.option.xAxis[0].data = this.timeData;
+      this.option.xAxis[1].data = this.timeData;
+
+      this.option.series[0].markLine.data[0].yAxis = this.prePrice;
+
+      let aa = this.handle_num(this.option.series[0].data);
+
+      let minVal = this.prePrice - this.prePrice * aa;
+      let maxVal = this.prePrice + this.prePrice * aa;
+      this.option.yAxis[0].min = minVal;
+      this.option.yAxis[0].max = maxVal;
+      this.option.yAxis[0].interval = Math.abs((this.prePrice - minVal) / 4);
+      this.option.yAxis[1].min = minVal;
+      this.option.yAxis[1].max = maxVal;
+      this.option.yAxis[1].interval = Math.abs((this.prePrice - minVal) / 4);
+      this.myChart.setOption(this.option);
+    },
+    defaultColor() {
+      return "#ccc";
+    },
+    defaultLabelColor() {
+      return "#000";
+    },
+    yAxisLabelColor(this: any, val: string, ind: number) {
+      return Number(val).toFixed(2) > this.prePrice.toFixed(2)
+        ? "#f56c6c"
+        : Number(val).toFixed(2) == this.prePrice.toFixed(2)
+        ? this.defaultLabelColor
+        : "#4eb61b";
+    },
+    handle_num(this: any, data: number[]) {
+      var _aa = Math.abs(
+        (Math.max.apply(null, data) - this.prePrice) / this.prePrice
+      );
+      var _bb = Math.abs(
+        (Math.min.apply(null, data) - this.prePrice) / this.prePrice
+      );
+      return _aa > _bb ? _aa : _bb;
+    },
+    fmtAxis(this: any, val: string, ind: number) {
+      if (this.isHK) {
+        if (val == "12:00") {
+          return "12:00/13:00";
+        } else {
+          return val;
+        }
+      } else {
+        if (val == "11:30") {
+          return "11:30/13:00";
+        } else {
+          return val;
+        }
+      }
+    },
+    fmtVal(this: any, ind: number, val: string) {
+      var arr;
+      if (this.isHK) {
+        arr = ["09:30", "12:00", "16:00"];
+      } else {
+        arr = ["09:30", "10:30", "11:30", "14:00", "15:00"];
+      }
+
+      if (arr.indexOf(val) != -1) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    formatNum(val: number) {
+      return (val / 10000).toFixed(3) + "万";
+    },
+    CJcolor(this: any, val: any, ind: number) {
+      let colorList;
+      if (
+        val.dataIndex == 0 ||
+        this.dataList[val.dataIndex][1] > this.dataList[val.dataIndex - 1][1]
+      ) {
+        colorList = "#f56c6c";
+      } else {
+        colorList = "#4eb61b";
+      }
+      return colorList;
     },
   },
   mounted(this: any) {
-    this.init();
+    this.init({
+      f2: 3473.07,
+      f3: 1.72,
+      f4: 58.62,
+      f12: "000001",
+      f13: 1,
+      f14: "上证指数",
+    });
   },
 };
 </script>
 <style scoped>
 .chart {
-  width: 560px;
+  width: 680px;
   height: 500px;
+  margin-top: 20px;
 }
 </style>

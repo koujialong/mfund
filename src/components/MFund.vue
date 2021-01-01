@@ -358,7 +358,7 @@ export default {
 <style scoped>
 .el-select {
   width: 400px;
-  margin: 40px 20px;
+  margin: 20px 20px;
 }
 .sub-btn {
   margin-left: 20px;
