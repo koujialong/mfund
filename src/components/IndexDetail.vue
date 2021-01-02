@@ -9,6 +9,8 @@ import * as echarts from "echarts";
 import { getIndexChart } from "@/api/apiList";
 import { indexList } from "@/utils/constant";
 import { time_arr } from "@/utils/utils";
+import bus from "@/utils/bus";
+import { TIMER } from "@/utils/timer";
 export default {
   name: "",
   data() {
@@ -285,7 +287,7 @@ export default {
           },
         ],
       };
-      this.getData();
+      bus.$on(TIMER.SECCB30, this.getData);
     },
     async getData(this: any) {
       const res: any = await getIndexChart(indexList[0].value);
@@ -433,7 +435,7 @@ export default {
 <style scoped>
 .chart {
   width: 680px;
-  height: 500px;
+  height: 490px;
   margin-top: 20px;
 }
 </style>

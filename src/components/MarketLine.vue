@@ -8,6 +8,8 @@ import { getCurrentInstance, reactive, toRefs } from "vue";
 import { getMarketLine } from "@/api/apiList";
 import { timeData } from "@/utils/constant";
 import * as echart from "echarts";
+import bus from "@/utils/bus";
+import { TIMER } from "@/utils/timer";
 interface barItem {
   f14: string; //名称
   f62: number; //流入流出金额
@@ -81,7 +83,7 @@ export default {
         },
         data: [],
       };
-      this.getChartData();
+      bus.$on(TIMER.SECCB30, this.getChartData);
     },
 
     async getChartData(this: any) {

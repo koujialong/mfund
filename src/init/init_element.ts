@@ -7,7 +7,6 @@ import {
     ElTableColumn,
     ElTag
 } from 'element-plus'
-import App from './App.vue'
 export function useElements(app: any) {
     app.component(ElButton.name, ElButton)
     app.component(ElInput.name, ElInput)

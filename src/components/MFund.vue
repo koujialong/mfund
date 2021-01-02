@@ -142,12 +142,22 @@
 </template>
 
 <script lang='ts'>
-import { reactive, toRefs, getCurrentInstance, ref, watch, toRaw } from "vue";
+import {
+  reactive,
+  toRefs,
+  getCurrentInstance,
+  ref,
+  watch,
+  toRaw,
+  defineComponent,
+} from "vue";
 import { getFundData, searchFund } from "@/api/apiList";
 import { formatDateTime } from "@/utils/utils";
 import MarketBar from "@/components/MarketBar.vue";
 import MarketLine from "@/components/MarketLine.vue";
 import IndexDetail from "@/components/IndexDetail.vue";
+import bus from "@/utils/bus";
+import { TIMER } from "@/utils/timer";
 interface fundItem {
   fundcode: string;
   name: string;
@@ -165,7 +175,7 @@ interface fundItem {
   ccsyl: number;
 }
 
-export default {
+export default defineComponent({
   name: "MFund",
   components: {
     MarketBar,
@@ -320,11 +330,10 @@ export default {
     },
 
     startTimer(this: any) {
-      this.updataFundList(true);
-      this.timer && this.timer.clearInterval();
-      this.timmer = setInterval(() => {
+      this.updataFundList();
+      bus.$on(TIMER.SECCB10, () => {
         this.updataFundList();
-      }, 10000);
+      });
     },
 
     handleDelete(this: any, index: number, item: fundItem) {
@@ -350,10 +359,7 @@ export default {
       this.updataFundList(true);
     },
   },
-  beforeUnmount(this: any) {
-    this.timer && this.timer.clearInterval();
-  },
-};
+});
 </script>
 <style scoped>
 .el-select {
