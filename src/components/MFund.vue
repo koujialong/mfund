@@ -36,7 +36,13 @@
     </el-table-column>
     <el-table-column label="基金名称" width="240">
       <template #default="scope">
-        <span>{{ scope.row.name }}</span>
+        <span
+          :style="`color:${scope.row.color};cursor:pointer`"
+          @mouseenter="scope.row.color = 'blue'"
+          @mouseout="scope.row.color = 'black'"
+          @click="popDetail(scope.row.fundcode)"
+          >{{ scope.row.name }}</span
+        >
       </template>
     </el-table-column>
     <el-table-column label="持仓成本价" width="140">
@@ -139,6 +145,10 @@
     <market-line />
     <market-bar />
   </div>
+
+  <el-dialog v-model="showPopDetail" destroy-on-close center>
+    <fund-detail :fundCode="clickFundCode" />
+  </el-dialog>
 </template>
 
 <script lang='ts'>
@@ -158,6 +168,7 @@ import MarketLine from "@/components/MarketLine.vue";
 import IndexDetail from "@/components/IndexDetail.vue";
 import bus from "@/utils/bus";
 import { TIMER } from "@/utils/timer";
+import FundDetail from "@/components/FundDetail.vue";
 interface fundItem {
   fundcode: string;
   name: string;
@@ -181,6 +192,7 @@ export default defineComponent({
     MarketBar,
     MarketLine,
     IndexDetail,
+    FundDetail,
   },
   data() {
     return {
@@ -193,6 +205,8 @@ export default defineComponent({
       rental: 0,
       rentalRatio: 0,
       allProfitRatio: 0,
+      showPopDetail: false,
+      clickFundCode: 0,
     };
   },
   mounted(this: any) {
@@ -330,7 +344,7 @@ export default defineComponent({
     },
 
     startTimer(this: any) {
-      this.updataFundList();
+      this.updataFundList(true);
       bus.$on(TIMER.SECCB10, () => {
         this.updataFundList();
       });
@@ -357,6 +371,10 @@ export default defineComponent({
       }
       this.updataLocalFundList();
       this.updataFundList(true);
+    },
+    popDetail(this: any, code: number) {
+      this.clickFundCode = code;
+      this.showPopDetail = true;
     },
   },
 });

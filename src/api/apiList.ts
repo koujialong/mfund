@@ -43,3 +43,25 @@ export function getMarketLine() {
 export function getIndexChart(code: string) {
     return get(`https://push2.eastmoney.com/api/qt/stock/trends2/get?secid=${code}&fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13&fields2=f51,f53,f56,f58&iscr=0&iscca=0&ndays=1&forcect=1`)
 }
+
+/**
+ * 获取基金净值图表
+ * @param fundcode 基金代码
+ * @param sltTimeRange 图标取值区间
+ */
+export function getFundDetailChart(fundcode: string, sltTimeRange: string) {
+    return get(`/FundMApi/FundYieldDiagramNew.ashx?FCODE=${fundcode
+        }&RANGE=${sltTimeRange
+        }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&_=${new Date().getTime()}`)
+}
+
+/**
+ * 获取累计收益图表数据
+ * @param fundcode 基金代码
+ * @param sltTimeRange 数据时间段
+ */
+export function getFundProfit(fundcode: string, sltTimeRange: string) {
+    return get(`/FundMApi/FundNetDiagram.ashx?FCODE=${fundcode
+        }&RANGE=${sltTimeRange
+        }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&_=${new Date().getTime()}`)
+}

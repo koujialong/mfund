@@ -5,7 +5,12 @@ import {
     ElSelect,
     ElTable,
     ElTableColumn,
-    ElTag
+    ElTag,
+    ElDialog,
+    ElTabs,
+    ElTabPane,
+    ElRadioButton,
+    ElRadioGroup
 } from 'element-plus'
 export function useElements(app: any) {
     app.component(ElButton.name, ElButton)
@@ -15,4 +20,9 @@ export function useElements(app: any) {
     app.component(ElSelect.name, ElSelect)
     app.component(ElOption.name, ElOption)
     app.component(ElTag.name, ElTag)
+    app.component(ElDialog.name, ElDialog)
+    app.component(ElTabs.name, ElTabs)
+    app.component(ElTabPane.name, ElTabPane)
+    app.component(ElRadioButton.name, ElRadioButton)
+    app.component(ElRadioGroup.name, ElRadioGroup)
 }

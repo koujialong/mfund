@@ -14,6 +14,10 @@ module.exports = {
                 target: 'https://fundsuggest.eastmoney.com',//跨域接口的地址
                 changeOrigin: true,
             },
+            '/FundMApi': {
+                target: 'https://fundmobapi.eastmoney.com',//跨域接口的地址
+                changeOrigin: true,
+            },
         },
         headers: {
             'Access-Control-Allow-Origin': '*',

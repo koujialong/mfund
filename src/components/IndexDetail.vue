@@ -287,6 +287,7 @@ export default {
           },
         ],
       };
+      this.getData();
       bus.$on(TIMER.SECCB30, this.getData);
     },
     async getData(this: any) {
@@ -297,6 +298,15 @@ export default {
       this.option.series[0].data = dataList.map((item: any) => +item[1]);
       this.option.series[1].data = dataList.map((item: any) => +item[1]);
       this.option.series[2].data = dataList.map((item: any) => +item[2]);
+
+      const nowPrice = dataList[dataList.length - 1][1];
+      const zdf = Number(
+        (((nowPrice - this.prePrice) * 100) / this.prePrice).toFixed(2)
+      );
+      this.option.title.text = `上证指数(${nowPrice},${
+        zdf >= 0 ? "+" + zdf : zdf
+      })`;
+      this.option.title.textStyle.color = zdf >= 0 ? "#f56c6c" : "#4eb61b";
 
       let firstDate = dataList[0][0].substr(11, 5);
       this.isHK = false;
