@@ -28,48 +28,48 @@
     @click="updataFundList(true)"
     >点击刷新：{{ timeStr }}</el-button
   >
-  <el-table :data="fundList" border style="margin-left: 20px; width: auto">
-    <el-table-column label="基金代码" width="100">
+  <el-table :data="fundList" border style="margin-left: 20px; width: 96%">
+    <el-table-column label="代码" min-width="6%">
       <template #default="scope">
         <span>{{ scope.row.fundcode }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="基金名称" width="240">
+    <el-table-column label="基金名称" min-width="12%">
       <template #default="scope">
         <span
           :style="`color:${scope.row.color};cursor:pointer`"
-          @mouseenter="scope.row.color = 'blue'"
-          @mouseout="scope.row.color = 'black'"
+          @mouseenter="scope.row.color = '#409EFF'"
+          @mouseout="scope.row.color = '#606266'"
           @click="popDetail(scope.row.fundcode)"
           >{{ scope.row.name }}</span
         >
       </template>
     </el-table-column>
-    <el-table-column label="持仓成本价" width="140">
+    <el-table-column label="成本价" min-width="8%">
       <template #default="scope">
         <el-input v-model="scope.row.cccb" v-if="scope.row.isEdit" />
         <span v-else>{{ scope.row.cccb }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有份额" width="140">
+    <el-table-column label="持有份额" min-width="8%">
       <template #default="scope">
         <el-input v-model="scope.row.hold" v-if="scope.row.isEdit" />
         <span v-else>{{ scope.row.hold }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有总额" width="140">
+    <el-table-column label="持有总额" min-width="6%">
       <template #default="scope">
         <span>{{ scope.row.holdPrice }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持仓收益" width="100">
+    <el-table-column label="持仓收益" min-width="6%">
       <template #default="scope">
         <span :style="`color: ${scope.row.ccsy >= 0 ? 'red' : 'green'}`">{{
           scope.row.ccsy >= 0 ? `+${scope.row.ccsy}` : scope.row.ccsy
         }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持仓收益率" width="100">
+    <el-table-column label="收益率" min-width="6%">
       <template #default="scope">
         <span :style="`color: ${scope.row.ccsyl >= 0 ? 'red' : 'green'}`"
           >{{
@@ -78,17 +78,17 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="单位净值" width="100">
+    <el-table-column label="单位净值" min-width="6%">
       <template #default="scope">
         <span>{{ scope.row.dwjz }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估算净值" width="100">
+    <el-table-column label="估算净值" min-width="6%">
       <template #default="scope">
         <span>{{ scope.row.gsz }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="涨跌幅" width="100">
+    <el-table-column label="涨跌幅" min-width="6%">
       <template #default="scope">
         <span :style="`color: ${scope.row.gszzl >= 0 ? 'red' : 'green'}`"
           >{{
@@ -97,19 +97,19 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="当日预估收益" width="120">
+    <el-table-column label="预估收益" min-width="6%">
       <template #default="scope">
         <span :style="`color: ${scope.row.gzsy >= 0 ? 'red' : 'green'}`">{{
           scope.row.gzsy >= 0 ? `+${scope.row.gzsy}` : scope.row.gzsy
         }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估值时间" width="150">
+    <el-table-column label="估值时间" min-width="10%">
       <template #default="scope">
         <span>{{ scope.row.gztime }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="操作" width="160">
+    <el-table-column label="操作" min-width="10%">
       <template #default="scope">
         <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">{{
           scope.row.isEdit ? "完成" : "编辑"
@@ -140,7 +140,7 @@
   <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
     当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
-  <div style="display: flex">
+  <div style="display: flex; width: 96%; overflow: hidden">
     <index-detail />
     <market-line />
     <market-bar />
@@ -211,7 +211,6 @@ export default defineComponent({
   },
   mounted(this: any) {
     let fundStr = window.localStorage.getItem("fund_list") || null;
-    console.log(fundStr);
     this.fundList =
       fundStr && fundStr != "{}" && fundStr != "undefined"
         ? JSON.parse(fundStr)

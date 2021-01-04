@@ -65,3 +65,39 @@ export function getFundProfit(fundcode: string, sltTimeRange: string) {
         }&RANGE=${sltTimeRange
         }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&_=${new Date().getTime()}`)
 }
+
+/**
+ * 获取基金估值图数据
+ * @param fundcode 基金代码
+ */
+export function getFundReckonChart(fundcode: string) {
+    return get(`/FundMApi/FundVarietieValuationDetail.ashx?FCODE=${fundcode
+        }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&_=${new Date().getTime()}`)
+}
+
+/**
+ * 获取基金持仓明细
+ * @param fundcode 基金代码
+ */
+export function getPositionDetail(fundcode: string) {
+    return get(`https://fundmobapi.eastmoney.com/FundMNewApi/FundMNInverstPosition?FCODE=${fundcode
+        }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&Uid=&_=${new Date().getTime()}`)
+}
+
+
+/**
+ * 获取股票详情
+ * @param gpList 股票代码字符串
+ */
+export function getStockData(gpList: string) {
+    return get(`https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f1,f2,f3,f4,f12,f13,f14,f292&fltt=2&secids=${gpList}&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&Uid=`)
+}
+
+/**
+ * 获取基金信息
+ * @param fundcode 基金代码
+ */
+export function getFundInfo(fundcode: string) {
+    return get(`/FundMApi/FundBaseTypeInformation.ashx?FCODE=${fundcode
+        }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&Uid=&_=${new Date().getTime()}`)
+}

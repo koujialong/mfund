@@ -43,7 +43,7 @@ export default {
           x: "center",
         },
         grid: {
-          top: 80,
+          top: 100,
           bottom: 30,
           right: 40,
           left: 60,
@@ -73,6 +73,10 @@ export default {
         legend: {
           top: 30,
           show: true,
+          itemWidth: 20,
+          textStyle: {
+            fontSize: 10,
+          },
           data: [
             "主力净流入",
             "超大单净流入",
@@ -155,15 +159,15 @@ export default {
   mounted(this: any) {
     this.init();
   },
-  beforeDestroy(this: any) {
+  beforeUnmount(this: any) {
     this.myChart.clear();
   },
 };
 </script>
 <style scoped>
 .chart-content {
-  width: 600px;
-  height: 440px;
+  width: 560px;
+  height: 410px;
   margin-top: 20px;
 }
 </style> 

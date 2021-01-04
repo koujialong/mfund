@@ -324,7 +324,7 @@ export default {
       } else {
         switch (firstDate) {
           case "09:30":
-            this.timeData = this.time_arr("hk");
+            this.timeData = time_arr("hk");
             this.isHK = true;
             this.option.xAxis[0].axisLabel = {
               formatter: this.fmtAxis,
@@ -336,10 +336,10 @@ export default {
             };
             break;
           case "21:30":
-            this.timeData = this.time_arr("us-s");
+            this.timeData = time_arr("us-s");
             break;
           case "22:30":
-            this.timeData = this.time_arr("us-w");
+            this.timeData = time_arr("us-w");
             break;
 
           default:
@@ -440,12 +440,15 @@ export default {
       f14: "上证指数",
     });
   },
+  beforeUnmount(this: any) {
+    this.myChart.clear();
+  },
 };
 </script>
 <style scoped>
 .chart {
-  width: 680px;
-  height: 490px;
+  width: 640px;
+  height: 460px;
   margin-top: 20px;
 }
 </style>

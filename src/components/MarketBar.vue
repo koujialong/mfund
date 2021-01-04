@@ -49,15 +49,10 @@ export default {
           {
             type: "slider",
             show: true,
+            zoomLock: true,
             xAxisIndex: [0],
             start: 0,
-            end: 30,
-          },
-          {
-            type: "inside",
-            xAxisIndex: [0],
-            start: 1,
-            end: 30,
+            end: 25,
           },
         ],
         xAxis: {
@@ -135,12 +130,15 @@ export default {
   mounted(this: any) {
     this.init();
   },
+  beforeUnmount(this: any) {
+    this.myChart.clear();
+  },
 };
 </script>
 <style scoped>
 .chart-content {
-  width: 600px;
-  height: 440px;
+  width: 560px;
+  height: 410px;
   margin-top: 20px;
 }
 </style> 

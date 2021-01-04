@@ -37,6 +37,7 @@ export function time_arr(type: string) {
         var timeArr = new Array();
         timeArr.push("09:30");
         timeArr.concat(getNextTime("09:30", "11:30", 1, timeArr));
+        timeArr.push("13:00");
         timeArr.concat(getNextTime("13:00", "15:00", 1, timeArr));
         return timeArr;
     }

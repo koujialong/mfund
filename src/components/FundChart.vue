@@ -160,9 +160,15 @@ export default defineComponent({
     changeTimeRange(this: any, val: any) {
       this.getData();
     },
+    defaultColor() {
+      return "#ccc";
+    },
   },
   mounted(this: any) {
     this.init();
+  },
+  beforeUnmount(this: any) {
+    this.myChart.clear();
   },
 });
 </script>
