@@ -24,18 +24,29 @@ module.exports = {
             'Access-Control-Allow-Origin': '*',
         }
     },
-    pages: {
-        index: {
-            // page 的入口
-            entry: 'src/main.ts',
-            // 模板来源
-            template: 'public/index.html',
-            // 在 dist/index.html 的输出
-            filename: 'index.html',
-            // 当使用 title 选项时，
-            // 在这个页面中包含的块，默认情况下会包含
-            // 提取出来的通用 chunk 和 vendor chunk。
-            chunks: ['chunk-vendors', 'chunk-common', 'index']
-        }
-    }
+    // publicPath: "/projects/webstromProjects/mfund/dist",
+    // pages: {
+    //     index: {
+    //         // page 的入口
+    //         entry: 'src/main.ts',
+    //         // 模板来源
+    //         template: 'public/index.html',
+    //         // 在 dist/index.html 的输出
+    //         filename: 'index.html',
+    //         // 当使用 title 选项时，
+    //         // 在这个页面中包含的块，默认情况下会包含
+    //         // 提取出来的通用 chunk 和 vendor chunk。
+    //         chunks: ['chunk-vendors', 'chunk-common', 'index']
+    //     }
+    // },
+    publicPath: "./",
+    // 输出文件目录
+    outputDir: "dist",
+    // 静态资源存放的文件夹(相对于ouputDir)
+    assetsDir: "assets",
+    // eslint-loader 是否在保存的时候检查(果断不用，这玩意儿我都没装)
+    lintOnSave: false,
+    // 我用的only，打包后小些
+    // compiler: false,
+    productionSourceMap: true,
 };
