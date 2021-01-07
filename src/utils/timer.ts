@@ -1,5 +1,5 @@
 
-let timer: NodeJS.Timeout;
+let timer: any;
 import bus from '@/utils/bus'
 export enum TIMER {
     SECCB = 'SECCB',

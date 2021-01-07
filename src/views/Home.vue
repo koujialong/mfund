@@ -11,9 +11,6 @@ import MFund from "@/components/MFund.vue";
 export default {
   components: { MFund },
   name: "",
-  setup() {
-    return {};
-  },
 };
 </script>
 <style scoped>

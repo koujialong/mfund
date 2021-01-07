@@ -24,18 +24,32 @@ module.exports = {
             'Access-Control-Allow-Origin': '*',
         }
     },
-    pages: {
-        index: {
-            // page 的入口
-            entry: 'src/main.ts',
-            // 模板来源
-            template: 'public/index.html',
-            // 在 dist/index.html 的输出
-            filename: 'index.html',
-            // 当使用 title 选项时，
-            // 在这个页面中包含的块，默认情况下会包含
-            // 提取出来的通用 chunk 和 vendor chunk。
-            chunks: ['chunk-vendors', 'chunk-common', 'index']
-        }
+    chainWebpack: config => {
+        //打包入口
+        config.when(process.env.BABEL_ENV === 'production', config => {
+            config.entry('app').clear().add('./src/main-prod.ts')
+            //cdn
+            config.set('externals', {
+                vue: 'Vue',
+                'vue-router': 'VueRouter',
+                axios: 'axios',
+                echarts: 'echarts',
+                'element-plus': 'ElementPlus',
+            })
+            config.plugin('html').tap(args => {
+                args[0].isProd = true
+                return args
+            })
+        })
+
+        config.when(process.env.BABEL_ENV === 'development', config => {
+            config.entry('app').clear().add('./src/main-dev.ts')
+            config.plugin('html').tap(args => {
+                args[0].isProd = false
+                return args
+            })
+        })
+
+
     }
 };
