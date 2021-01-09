@@ -1,17 +1,19 @@
 import { get, post } from './http'
 
 /**
- * 关键字查找寂静
+ * 关键字查找基金
  * @param fundCode 基金关键词
  */
 export function searchFund(fundCode: string) {
-    return get(`/FundSearch/api/FundSearchAPI.ashx`,
-        {
-            key: fundCode,
-            m: 9,
-            _: new Date().getTime()
-        }
-    )
+    return get(`/FundSearch/api/FundSearchAPI.ashx?&m=1&key=${fundCode}&_=${new Date().getTime()}`)
+}
+
+/**
+ * 获取基金列表
+ * @param fundCode 基金关键词
+ */
+export function getFunds() {
+    return get(`/js/fundcode_search.js`)
 }
 
 /**
@@ -20,6 +22,14 @@ export function searchFund(fundCode: string) {
  */
 export function getFundData(fundCode: string) {
     return get(`/js/${fundCode}.js?rt=1463558676006`)
+}
+
+/**
+ * 查询基金数据
+ * @param fundCode 基金编码
+ */
+export function getFundDatas(fundlist: [], deviceid: string) {
+    return get(`https://fundmobapi.eastmoney.com/FundMNewApi/FundMNFInfo?pageIndex=1&pageSize=200&plat=Android&appType=ttjj&product=EFund&Version=1&&Fcodes=${fundlist}&deviceid=${deviceid}`)
 }
 
 /**

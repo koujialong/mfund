@@ -8,7 +8,7 @@
     reserve-keyword
     placeholder="请输入基金名称或代码"
     :remote-method="remoteMethod"
-    :loading="loading"
+    :loading="searchloading"
     loading-text="正在查找基金..."
     no-data-text="未查找到基金"
   >
@@ -41,7 +41,7 @@
           @mouseenter="scope.row.color = '#409EFF'"
           @mouseout="scope.row.color = '#606266'"
           @click="popDetail(scope.row.fundcode)"
-          >{{ scope.row.name }}</span
+          >{{ scope.row.SHORTNAME }}</span
         >
       </template>
     </el-table-column>
@@ -80,19 +80,19 @@
     </el-table-column>
     <el-table-column label="单位净值" min-width="6%">
       <template #default="scope">
-        <span>{{ scope.row.dwjz }}</span>
+        <span>{{ scope.row.NAV }}</span>
       </template>
     </el-table-column>
     <el-table-column label="估算净值" min-width="6%">
       <template #default="scope">
-        <span>{{ scope.row.gsz }}</span>
+        <span>{{ scope.row.GSZ }}</span>
       </template>
     </el-table-column>
     <el-table-column label="涨跌幅" min-width="6%">
       <template #default="scope">
-        <span :style="`color: ${scope.row.gszzl >= 0 ? 'red' : 'green'}`"
+        <span :style="`color: ${scope.row.GSZZL >= 0 ? 'red' : 'green'}`"
           >{{
-            scope.row.gszzl >= 0 ? `+${scope.row.gszzl}` : scope.row.gszzl
+            scope.row.GSZZL >= 0 ? `+${scope.row.GSZZL}` : scope.row.GSZZL
           }}%</span
         >
       </template>
@@ -106,7 +106,7 @@
     </el-table-column>
     <el-table-column label="估值时间" min-width="10%">
       <template #default="scope">
-        <span>{{ scope.row.gztime }}</span>
+        <span>{{ scope.row.GZTIME }}</span>
       </template>
     </el-table-column>
     <el-table-column label="操作" min-width="10%">
@@ -161,7 +161,7 @@ import {
   toRaw,
   defineComponent,
 } from "vue";
-import { getFundData, searchFund } from "@/api/apiList";
+import { getFundData, getFundDatas, getFunds, searchFund } from "@/api/apiList";
 import { formatDateTime } from "@/utils/utils";
 import MarketBar from "@/components/MarketBar.vue";
 import MarketLine from "@/components/MarketLine.vue";
@@ -173,10 +173,10 @@ interface fundItem {
   fundcode: string;
   name: string;
   jzrq: string;
-  dwjz: number;
-  gsz: string;
-  gszzl: number;
-  gztime: string;
+  NAV: number;
+  GSZ: string;
+  GSZZL: number;
+  GZTIME: string;
   isEdit: boolean;
   hold: number;
   holdPrice: number;
@@ -198,7 +198,8 @@ export default defineComponent({
     return {
       value: [],
       loading: false,
-      options: [{ disabled: true }],
+      searchloading: false,
+      options: [],
       fundList: new Array<fundItem>(),
       allProfit: 0,
       dayProfit: 0,
@@ -216,34 +217,42 @@ export default defineComponent({
         ? JSON.parse(fundStr)
         : new Array<fundItem>();
     this.startTimer();
+    getFunds().then((res: any) => {
+      this.allFunds = JSON.parse(res.split("=")[1].split(";")[0].trim()).map(
+        (item: any) => {
+          return {
+            value: item[0],
+            label: item[2],
+          };
+        }
+      );
+      console.log(this.allFunds);
+      // this.options = this.allFunds.slice(0, 100);
+    });
   },
   methods: {
     async remoteMethod(this: any, query: string) {
       if (query !== "") {
-        this.loading = true;
-        let res: any = await searchFund(query).catch((err: Error) => {
-          this.loading = false;
-        });
-        if (res.Datas.length > 0) {
-          const options = res.Datas.filter((remoteItem: any) => {
-            return !this.fundList.some((item: fundItem) => {
-              return item.fundcode == remoteItem.CODE;
-            });
-          }).map((item: any) => {
-            return {
-              value: item.CODE,
-              label: item.NAME,
-            };
+        this.searchloading = true;
+        if (this.allFunds.length > 0) {
+          let options = this.allFunds.filter((remoteItem: any) => {
+            return (
+              !this.fundList.some((item: fundItem) => {
+                return item.fundcode == remoteItem.value;
+              }) &&
+              (remoteItem.value.indexOf(query) != -1 ||
+                remoteItem.label.indexOf(query) != -1)
+            );
           });
-          this.options = options.length > 0 ? options : [{ disabled: true }];
-          this.loading = false;
+          this.options = options.length > 100 ? options.slice(0, 100) : options;
+          this.searchloading = false;
         } else {
-          this.options = [{ disabled: true }];
+          this.options = [];
         }
         console.log("选项", this.options);
       } else {
-        this.loading = false;
-        this.options = [{ disabled: true }];
+        this.searchloading = false;
+        this.options = [];
       }
     },
     addFund(this: any) {
@@ -263,55 +272,49 @@ export default defineComponent({
         let dayProfit: number = 0;
         let rental: number = 0;
         let allProfit: number = 0;
-        let fundReqList = this.fundList.map((item: fundItem) => {
-          return getFundData(item.fundcode);
-        });
         this.loading = true;
-        let resList: any = await Promise.all(fundReqList).catch(() => {
+        let res: any = await getFundDatas(
+          this.fundList.map((val: any) => val.fundcode).join(","),
+          this.getDeviceid()
+        ).catch(() => {
           this.loading = false;
         });
         let that = this;
-        resList.forEach((res: any, index: number) => {
-          eval(res);
-          function jsonpgz(obj: Object) {
-            let item = that.fundList[index];
-            item = Object.assign(item, obj);
-            //持仓成本价
-            item.cccb || (item.cccb = item.dwjz);
-            //持有份额
-            item.hold || (item.hold = 0);
-            item.ccsyl || (item.ccsyl = 0);
-            //持有总额
-            item.holdPrice = Number((item.hold * item.dwjz).toFixed(2));
-            //当日估值收益
-            item.gzsy = Number((item.holdPrice * item.gszzl * 0.01).toFixed(2));
-            //总收益计算
-            dayProfit = Number((dayProfit + item.gzsy).toFixed(2));
-            //持仓总额
-            rental = Number((rental + item.holdPrice).toFixed(2));
-            //持仓收益
-            item.ccsy = Number(
-              ((item.dwjz - item.cccb) * item.hold).toFixed(2)
+        res.Datas.forEach((obj: any, index: number) => {
+          let item = that.fundList[index];
+          item = Object.assign(item, obj);
+          //持仓成本价
+          item.cccb || (item.cccb = item.NAV);
+          //持有份额
+          item.hold || (item.hold = 0);
+          item.ccsyl || (item.ccsyl = 0);
+          //持有总额
+          item.holdPrice = Number((item.hold * item.NAV).toFixed(2));
+          //当日估值收益
+          item.gzsy = Number((item.holdPrice * item.GSZZL * 0.01).toFixed(2));
+          //总收益计算
+          dayProfit = Number((dayProfit + item.gzsy).toFixed(2));
+          //持仓总额
+          rental = Number((rental + item.holdPrice).toFixed(2));
+          //持仓收益
+          item.ccsy = Number(((item.NAV - item.cccb) * item.hold).toFixed(2));
+          //持仓收益
+          item.ccsyl = item.holdPrice
+            ? Number(
+                ((item.ccsy / (item.holdPrice - item.ccsy)) * 100).toFixed(2)
+              )
+            : 0;
+          //持仓总收益
+          allProfit = Number((allProfit + item.ccsy).toFixed(2));
+          // //持仓总收益
+          if (index === res.Datas.length - 1) {
+            that.dayProfit = dayProfit;
+            that.rental = rental;
+            that.rentalRatio = ((dayProfit / rental) * 100).toFixed(2);
+            that.allProfit = allProfit;
+            that.allProfitRatio = Number(
+              ((allProfit / (rental - allProfit)) * 100).toFixed(2)
             );
-            //持仓收益
-            item.ccsyl = item.holdPrice
-              ? Number(
-                  ((item.ccsy / (item.holdPrice - item.ccsy)) * 100).toFixed(2)
-                )
-              : 0;
-            //持仓总收益
-            allProfit = Number((allProfit + item.ccsy).toFixed(2));
-            // //持仓总收益
-            // allProfit = Number((allProfit + item.ccsy).toFixed(2));
-            if (index === resList.length - 1) {
-              that.dayProfit = dayProfit;
-              that.rental = rental;
-              that.rentalRatio = ((dayProfit / rental) * 100).toFixed(2);
-              that.allProfit = allProfit;
-              that.allProfitRatio = Number(
-                ((allProfit / (rental - allProfit)) * 100).toFixed(2)
-              );
-            }
           }
         });
         //延迟加载效果
@@ -374,6 +377,16 @@ export default defineComponent({
     popDetail(this: any, code: number) {
       this.clickFundCode = code;
       this.showPopDetail = true;
+    },
+    getDeviceid() {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+          var r = (Math.random() * 16) | 0,
+            v = c == "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        }
+      );
     },
   },
 });
