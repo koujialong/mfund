@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <link rel="icon" href="<%= BASE_URL %>fund.png">
   <title>
     <%= htmlWebpackPlugin.options.isProd?'':'dev-' %>我的基金
   </title>
@@ -19,9 +19,7 @@
     <script src="https://unpkg.com/vue-router@4.0.0"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.staticfile.org/nprogress/0.2.0/nprogress.min.js"></script>
-
-    <!-- element -->
-    <!-- <script src="https://unpkg.com/element-plus@1.0.1-beta.23/lib/index.js"></script> -->
+    <!-- <script src="https://unpkg.com/element-plus/lib/index.js"></script> -->
     <% } %>
 
 </head>
@@ -31,6 +29,8 @@
     <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
         Please enable it to continue.</strong>
   </noscript>
+  <!-- element -->
+
   <div id="app"></div>
   <!-- built files will be auto injected -->
 </body>
