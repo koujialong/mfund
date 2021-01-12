@@ -83,7 +83,10 @@ export default {
         },
         data: [],
       };
-      bus.$on(TIMER.SECCB30, this.getChartData);
+      this.getChartData();
+      setTimeout(() => {
+        bus.$on(TIMER.SECCB30, this.getChartData);
+      }, 2000);
     },
 
     async getChartData(this: any) {

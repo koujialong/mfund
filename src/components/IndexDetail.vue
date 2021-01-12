@@ -288,7 +288,9 @@ export default {
         ],
       };
       this.getData();
-      bus.$on(TIMER.SECCB30, this.getData);
+      setTimeout(() => {
+        bus.$on(TIMER.SECCB30, this.getData);
+      }, 2000);
     },
     async getData(this: any) {
       const res: any = await getIndexChart(indexList[0].value);
