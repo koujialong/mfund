@@ -145,6 +145,7 @@
     <market-line />
     <market-bar />
   </div>
+  <cloud-chart />
 
   <el-dialog v-model="showPopDetail" destroy-on-close center>
     <fund-detail :fundCode="clickFundCode" />
@@ -169,6 +170,7 @@ import IndexDetail from "@/components/IndexDetail.vue";
 import bus from "@/utils/bus";
 import { TIMER } from "@/utils/timer";
 import FundDetail from "@/components/FundDetail.vue";
+import CloudChart from "@/components/CloudChart.vue";
 interface fundItem {
   fundcode: string;
   name: string;
@@ -193,6 +195,7 @@ export default defineComponent({
     MarketLine,
     IndexDetail,
     FundDetail,
+    CloudChart,
   },
   data() {
     return {

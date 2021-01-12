@@ -111,3 +111,10 @@ export function getFundInfo(fundcode: string) {
     return get(`/FundMApi/FundBaseTypeInformation.ashx?FCODE=${fundcode
         }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&Uid=&_=${new Date().getTime()}`)
 }
+
+/**
+ * 获取云图数据
+ */
+export function getCloudData() {
+    return get(`https://sslapi.jrj.com.cn/zxhq/sapi/plat/query_simple_info?day=1&1610427403080&callback=jsonp1610427397997`)
+}
