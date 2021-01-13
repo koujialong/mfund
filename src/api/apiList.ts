@@ -112,17 +112,39 @@ export function getFundInfo(fundcode: string) {
         }&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0&Uid=&_=${new Date().getTime()}`)
 }
 
-/**
- * 获取云图数据
- */
-export function getCloudData() {
-    return get(`https://sslapi.jrj.com.cn/zxhq/sapi/plat/query_simple_info`)
-}
+// /**
+//  * 获取云图数据
+//  */
+// export function getCloudData() {
+//     return get(`https://sslapi.jrj.com.cn/zxhq/sapi/plat/query_simple_info`)
+// }
 
 //板块数据
-export function getCloudData2(){
-    return get(`http://www.z3quant.com/openapi/openjson/tx/.json?1610515849015`)
+export function getCloudClass() {
+    return get(`http://www.z3quant.com/openapi/openjson/tx/.json?${new Date().getTime()}`)
 }
 
 //板块行情
-// http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=perf_idx.chng_pct_month&1610516503684
+//http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=mkt_idx.cur_chng_pct&&${new Date().getTime()} 实时
+//http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=mkt_idx.chng_pct_week&1610526156402 周
+//http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=perf_idx.chng_pct_month&1610526210436 月
+//http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=perf_idx.chng_pct_year&1610526255052 年
+//http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=mkt_idx.pe_ttm&1610526272463 pe
+export function getCloudData(tapMode: string) {
+    let condition = 'mkt_idx.cur_chng_pct';
+    switch (tapMode) {
+        case 'week':
+            condition = 'mkt_idx.chng_pct_week'
+            break;
+        case 'month':
+            condition = 'perf_idx.chng_pct_month'
+            break;
+        case 'year':
+            condition = 'perf_idx.chng_pct_year'
+            break;
+        case 'pe':
+            condition = 'mkt_idx.pe_ttm'
+            break;
+    }
+    return get(`http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=${condition}&${new Date().getTime()}`)
+}
