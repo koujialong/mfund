@@ -23,7 +23,7 @@
 
 <script lang='ts'>
 import { reactive, toRefs } from "vue";
-import { getCloudData } from "@/api/apiList";
+import { getCloudData, getCloudData2 } from "@/api/apiList";
 import * as echarts from "echarts";
 import { log } from "echarts/lib/util/log";
 import bus from "@/utils/bus";
@@ -57,7 +57,6 @@ export default {
           {
             name: "板块云图",
             type: "treemap",
-            colorSaturation: [0.35, 1],
             visibleMin: 90,
             width: "98%",
             height: "94%",
@@ -78,28 +77,40 @@ export default {
       }, 2000);
     },
     getData(this: any) {
+      getCloudData2().then((res:any)=>{
+        console.log('数据2',res);
+        
+      })
       getCloudData().then((res: any) => {
-        res = JSON.parse(res.split("(")[1].split(")")[0].split(";")[0].trim());
         if (res.data.items) {
           let mainKey = this.tabMode;
           let maxValue = 0;
           let maxAdvanceDeclineRatio = 0;
+          let max:any={
+            advanceDeclineRatio:0
+          };
           res.data.items.forEach((item: any) => {
             maxValue < item[mainKey] && (maxValue = item[mainKey]);
-            maxAdvanceDeclineRatio < item.advanceDeclineRatio &&
-              (maxAdvanceDeclineRatio = item.advanceDeclineRatio);
+            let advanceDeclineRatio=Math.abs(item.advanceDeclineRatio)
+            // maxAdvanceDeclineRatio < advanceDeclineRatio &&
+            //   (maxAdvanceDeclineRatio = advanceDeclineRatio);
+            //  max.advanceDeclineRatio < item.advanceDeclineRatio &&
+            //   (max = item);
+              if(maxAdvanceDeclineRatio < advanceDeclineRatio){
+                maxAdvanceDeclineRatio = advanceDeclineRatio
+                max = item
+              }
           });
           let mapData = res.data.items.map((item: any) => {
-            item.advanceDeclineRatio < 0 && console.log(item.platName);
             let mainValue = item[mainKey];
             let fontSize = (mainValue / maxValue) * 40;
             fontSize = fontSize < 8 ? 10 : fontSize;
-            let colorSaturation = Math.abs(item.mainValue) / 10;
+            // console.log(item.advanceDeclineRatio,maxAdvanceDeclineRatio,res.data.items);
+            
             let alphe =
               Math.abs(item.advanceDeclineRatio / maxAdvanceDeclineRatio) *
                 0.3 +
               0.7;
-            console.log(colorSaturation);
             return {
               value: mainValue,
               name: `${item.platName}(${
@@ -110,8 +121,7 @@ export default {
                 color:
                   item.advanceDeclineRatio >= 0
                     ? `rgba(255, 65, 24, ${alphe})`
-                    : `rgba(0,100,0, ${alphe})`,
-                colorAlpha: fontSize % 2 == 1 ? 9 : 0,
+                    : `rgba(0,100,0, ${alphe})`
               },
               label: {
                 fontSize,
@@ -120,6 +130,8 @@ export default {
             };
           });
           this.option.series[0].data = mapData;
+          console.log(maxAdvanceDeclineRatio,max,mapData,res.data.items,);
+          
           this.myChart.setOption(this.option);
         }
       });

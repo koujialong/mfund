@@ -229,8 +229,6 @@ export default defineComponent({
           };
         }
       );
-      console.log(this.allFunds);
-      // this.options = this.allFunds.slice(0, 100);
     });
   },
   methods: {
@@ -283,47 +281,49 @@ export default defineComponent({
           this.loading = false;
         });
         let that = this;
-        res.Datas.forEach((obj: any, index: number) => {
-          let item = that.fundList[index];
-          item = Object.assign(item, obj);
-          //持仓成本价
-          item.cccb || (item.cccb = item.NAV);
-          //持有份额
-          item.hold || (item.hold = 0);
-          item.ccsyl || (item.ccsyl = 0);
-          //持有总额
-          item.holdPrice = Number((item.hold * item.NAV).toFixed(2));
-          //当日估值收益
-          item.gzsy = Number((item.holdPrice * item.GSZZL * 0.01).toFixed(2));
-          //总收益计算
-          dayProfit = Number((dayProfit + item.gzsy).toFixed(2));
-          //持仓总额
-          rental = Number((rental + item.holdPrice).toFixed(2));
-          //持仓收益
-          item.ccsy = Number(((item.NAV - item.cccb) * item.hold).toFixed(2));
-          //持仓收益
-          item.ccsyl = item.holdPrice
-            ? Number(
-                ((item.ccsy / (item.holdPrice - item.ccsy)) * 100).toFixed(2)
-              )
-            : 0;
-          //持仓总收益
-          allProfit = Number((allProfit + item.ccsy).toFixed(2));
-          // //持仓总收益
-          if (index === res.Datas.length - 1) {
-            that.dayProfit = dayProfit;
-            that.rental = rental;
-            that.rentalRatio = ((dayProfit / rental) * 100).toFixed(2);
-            that.allProfit = allProfit;
-            that.allProfitRatio = Number(
-              ((allProfit / (rental - allProfit)) * 100).toFixed(2)
-            );
-          }
-        });
-        //延迟加载效果
-        setTimeout(() => {
-          this.loading = false;
-        }, 1000);
+        if (res&&res.Datas && res.Datas.length > 0) {
+          res.Datas.forEach((obj: any, index: number) => {
+            let item = that.fundList[index];
+            item = Object.assign(item, obj);
+            //持仓成本价
+            item.cccb || (item.cccb = item.NAV);
+            //持有份额
+            item.hold || (item.hold = 0);
+            item.ccsyl || (item.ccsyl = 0);
+            //持有总额
+            item.holdPrice = Number((item.hold * item.NAV).toFixed(2));
+            //当日估值收益
+            item.gzsy = Number((item.holdPrice * item.GSZZL * 0.01).toFixed(2));
+            //总收益计算
+            dayProfit = Number((dayProfit + item.gzsy).toFixed(2));
+            //持仓总额
+            rental = Number((rental + item.holdPrice).toFixed(2));
+            //持仓收益
+            item.ccsy = Number(((item.NAV - item.cccb) * item.hold).toFixed(2));
+            //持仓收益
+            item.ccsyl = item.holdPrice
+              ? Number(
+                  ((item.ccsy / (item.holdPrice - item.ccsy)) * 100).toFixed(2)
+                )
+              : 0;
+            //持仓总收益
+            allProfit = Number((allProfit + item.ccsy).toFixed(2));
+            // //持仓总收益
+            if (index === res.Datas.length - 1) {
+              that.dayProfit = dayProfit;
+              that.rental = rental;
+              that.rentalRatio = ((dayProfit / rental) * 100).toFixed(2);
+              that.allProfit = allProfit;
+              that.allProfitRatio = Number(
+                ((allProfit / (rental - allProfit)) * 100).toFixed(2)
+              );
+            }
+          });
+          //延迟加载效果
+          setTimeout(() => {
+            this.loading = false;
+          }, 1000);
+        }
       }
     },
 

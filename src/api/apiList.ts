@@ -116,5 +116,13 @@ export function getFundInfo(fundcode: string) {
  * 获取云图数据
  */
 export function getCloudData() {
-    return get(`https://sslapi.jrj.com.cn/zxhq/sapi/plat/query_simple_info?day=1&1610427403080&callback=jsonp1610427397997`)
+    return get(`https://sslapi.jrj.com.cn/zxhq/sapi/plat/query_simple_info`)
 }
+
+//板块数据
+export function getCloudData2(){
+    return get(`http://www.z3quant.com/openapi/openjson/tx/.json?1610515849015`)
+}
+
+//板块行情
+// http://www.z3quant.com/openapi/timedQueryMap.shtml?isContinue=1&condition=perf_idx.chng_pct_month&1610516503684
