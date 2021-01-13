@@ -48,11 +48,13 @@ export default {
       this.option = {
         tooltip: {
           formatter: function (info: any) {
-            return `名称(涨跌幅)：${info.name}`;
+            return `${info.name}`;
           },
         },
+        // backgroundColor: "#202930",
         series: [
           {
+            // backgroundColor: "#202930",
             name: "板块云图",
             type: "treemap",
             visibleMin: 90,
@@ -61,7 +63,7 @@ export default {
             itemStyle: {
               gapWidth: 1,
             },
-            roam: false,
+            roam: "move",
             breadcrumb: {
               show: true,
             },
@@ -71,9 +73,9 @@ export default {
             levels: [
               {
                 itemStyle: {
-                  borderColor: "#202930",
-                  borderWidth: 0,
-                  gapWidth: 1,
+                  borderWidth: 20,
+                  padding: 24,
+                  gapWidth: 0,
                 },
                 upperLabel: {
                   show: false,
@@ -82,26 +84,28 @@ export default {
               {
                 upperLabel: {
                   show: true,
+                  color: "#fff",
+                  fontSize: 12,
+                  offset: [4, 2],
+                  height: 20,
                 },
                 itemStyle: {
                   borderColor: "#202930",
                   borderWidth: 1,
                   gapWidth: 1,
                 },
-                // emphasis: {
-                //   itemStyle: {
-                //     borderColor: "#202930",
-                //   },
-                // },
               },
               {
-                upperLabel: true,
-                colorSaturation: [0.8, 1],
+                upperLabel: {
+                  show: true,
+                  color: "#fff",
+                  offset: [4, 0],
+                  fontSize: 10,
+                  height: 18,
+                },
                 itemStyle: {
                   borderWidth: 1,
                   gapWidth: 1,
-                  borderColor: "#202930",
-                  borderColorSaturation: 0.6,
                 },
               },
             ],
@@ -125,7 +129,7 @@ export default {
         plate || (plate = await getCloudClass());
         let nums: any = await getCloudData(this.tabMode);
         this.maxScale = plate.scale;
-        let root = this.getChildItem(plate, nums);
+        let root = this.getChildItem(null, plate, nums, 0);
         this.option.series[0].data = root.children;
         console.log(root.children);
 
@@ -133,30 +137,36 @@ export default {
       }
     },
 
-    getChildItem(this: any, root: any, nums: any) {
+    getChildItem(this: any, pre: any, root: any, nums: any, index: number) {
       root.value = root.scale;
       if (root.children && root.children.length > 0) {
-        root.children.forEach((item: any) => {
-          this.getChildItem(item, nums);
+        root.children.forEach((item: any, index: any) => {
+          this.getChildItem(root, item, nums, index);
         });
       } else {
         root.zdf = nums.data[root.name];
         let alphe = Math.abs(root.zdf) * 0.4 + 0.6;
+        let color =
+          root.zdf >= 0
+            ? `rgba(255, 65, 24, ${alphe})`
+            : `rgba(0,100,0, ${alphe})`;
+        if (index === 0 && pre) {
+          pre.itemStyle = {
+            borderColor: color,
+          };
+        }
         let fontSize = (root.scale / this.maxScale) * 800;
         fontSize = fontSize > 8 ? fontSize : 8;
         root.value = root.scale;
         root.itemStyle = {
-          color:
-            root.zdf >= 0
-              ? `rgba(255, 65, 24, ${alphe})`
-              : `rgba(0,100,0, ${alphe})`,
+          color,
         };
         if (this.tabMode === "pe") {
-          root.name = `${root.name}\n(PE: ${Number(root.zdf).toFixed(2)})`;
+          root.name = `${root.name}\n${Number(root.zdf).toFixed(2)}`;
         } else {
-          root.name = `${root.name}\n(${root.zdf >= 0 ? "+" : ""}${Number(
+          root.name = `${root.name}\n${root.zdf >= 0 ? "+" : ""}${Number(
             root.zdf
-          ).toFixed(2)}%)`;
+          ).toFixed(2)}%`;
         }
         root.label = {
           fontSize,
