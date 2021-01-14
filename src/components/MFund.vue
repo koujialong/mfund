@@ -47,13 +47,21 @@
     </el-table-column>
     <el-table-column label="成本价" min-width="8%">
       <template #default="scope">
-        <el-input v-model="scope.row.cccb" v-if="scope.row.isEdit" />
+        <el-input
+          v-model="scope.row.cccb"
+          type="number"
+          v-if="scope.row.isEdit"
+        />
         <span v-else>{{ scope.row.cccb }}</span>
       </template>
     </el-table-column>
     <el-table-column label="持有份额" min-width="8%">
       <template #default="scope">
-        <el-input v-model="scope.row.hold" v-if="scope.row.isEdit" />
+        <el-input
+          v-model="scope.row.hold"
+          type="number"
+          v-if="scope.row.isEdit"
+        />
         <span v-else>{{ scope.row.hold }}</span>
       </template>
     </el-table-column>
