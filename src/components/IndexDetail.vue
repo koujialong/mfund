@@ -449,7 +449,7 @@ export default {
 </script>
 <style scoped>
 .chart {
-  width: 640px;
+  width: 33%;
   height: 460px;
   margin-top: 20px;
 }

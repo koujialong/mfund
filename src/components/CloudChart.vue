@@ -2,15 +2,17 @@
 <template>
   <div
     style="
-      width: 100%;
+      width: 70%;
       display: flex;
       justify-content: left;
       align-items: center;
       margin-left: 24px;
+      margin-bottom: 12px;
+      margin-right: 0;
     "
   >
     <text style="margin-right: 24px; font-size: 34px; color: #f56c6c"
-      >大盘板块云图</text
+      >板块云图</text
     >
     <el-radio-group fill="#f56c6c" v-model="tabMode" @change="changeMode">
       <el-radio-button label="rt">实时涨跌幅</el-radio-button>
@@ -59,13 +61,15 @@ export default {
             type: "treemap",
             visibleMin: 90,
             width: "98%",
-            height: "94%",
+            height: "96%",
             itemStyle: {
               gapWidth: 1,
             },
             roam: "move",
             breadcrumb: {
               show: true,
+              top: "top",
+              height: 30,
             },
             upperLabel: {
               show: true,
@@ -113,6 +117,11 @@ export default {
           },
         ],
       };
+      this.myChart.on("mapselectchanged", (params: any) => {
+        console.log(params);
+        this.location = params;
+      });
+
       this.getData(true);
       setTimeout(() => {
         // bus.$on(TIMER.SECCB30, this.getData);
@@ -121,7 +130,8 @@ export default {
 
     changeMode(this: any, val: any) {
       plate = null;
-      this.getData(true);
+      this.option = null;
+      this.init();
     },
 
     async getData(this: any, forceGet: boolean = false) {
@@ -131,8 +141,6 @@ export default {
         this.maxScale = plate.scale;
         let root = this.getChildItem(null, plate, nums, 0);
         this.option.series[0].data = root.children;
-        console.log(root.children);
-
         this.myChart.setOption(this.option);
       }
     },
@@ -156,7 +164,7 @@ export default {
           };
         }
         let fontSize = (root.scale / this.maxScale) * 800;
-        fontSize = fontSize > 8 ? fontSize : 8;
+        fontSize = fontSize > 10 ? fontSize : 10;
         root.value = root.scale;
         root.itemStyle = {
           color,

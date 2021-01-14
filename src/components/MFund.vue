@@ -140,7 +140,7 @@
   <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
     当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
-  <div style="display: flex; width: 96%; overflow: hidden">
+  <div style="display: flex; width: 100%; overflow: hidden">
     <index-detail />
     <market-line />
     <market-bar />
@@ -281,7 +281,7 @@ export default defineComponent({
           this.loading = false;
         });
         let that = this;
-        if (res&&res.Datas && res.Datas.length > 0) {
+        if (res && res.Datas && res.Datas.length > 0) {
           res.Datas.forEach((obj: any, index: number) => {
             let item = that.fundList[index];
             item = Object.assign(item, obj);

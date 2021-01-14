@@ -140,7 +140,7 @@ export default {
 </script>
 <style scoped>
 .chart-content {
-  width: 560px;
+  width: 33%;
   height: 410px;
   margin-top: 20px;
 }
