@@ -22,7 +22,7 @@
       <el-radio-button label="pe">市盈率</el-radio-button>
     </el-radio-group>
   </div>
-  <div class="chart" ref="mainCharts"></div>
+  <div class="chart" ref="mainCharts" id="mainCharts"></div>
 </template>
 
 <script lang='ts'>
@@ -32,7 +32,6 @@ import * as echarts from "echarts";
 import { log } from "echarts/lib/util/log";
 import bus from "@/utils/bus";
 import { TIMER } from "@/utils/timer";
-var plate: any;
 export default {
   name: "",
   data() {
@@ -46,17 +45,16 @@ export default {
   methods: {
     init(this: any) {
       this.chartEL = this.$refs.mainCharts;
-      this.myChart = echarts.init(this.chartEL);
+      let el: any = document.getElementById("mainCharts");
+      this.myChart = echarts.init(el);
       this.option = {
         tooltip: {
           formatter: function (info: any) {
             return `${info.name}`;
           },
         },
-        // backgroundColor: "#202930",
         series: [
           {
-            // backgroundColor: "#202930",
             name: "板块云图",
             type: "treemap",
             visibleMin: 90,
@@ -74,6 +72,7 @@ export default {
             upperLabel: {
               show: true,
             },
+            zoomToNodeRatio: 0.16 * 0.16,
             levels: [
               {
                 itemStyle: {
@@ -124,23 +123,23 @@ export default {
 
       this.getData(true);
       setTimeout(() => {
-        // bus.$on(TIMER.SECCB30, this.getData);
+        bus.$on(TIMER.SECCB30, this.getData);
       }, 2000);
     },
 
     changeMode(this: any, val: any) {
-      plate = null;
       this.option = null;
       this.init();
     },
 
     async getData(this: any, forceGet: boolean = false) {
       if (forceGet || this.tabMode === "rt") {
-        plate || (plate = await getCloudClass());
+        let plate: any = await getCloudClass();
         let nums: any = await getCloudData(this.tabMode);
         this.maxScale = plate.scale;
         let root = this.getChildItem(null, plate, nums, 0);
         this.option.series[0].data = root.children;
+        this.myChart.clear();
         this.myChart.setOption(this.option);
       }
     },
@@ -185,7 +184,6 @@ export default {
   },
   beforeUnmount(this: any) {
     this.myChart.clear();
-    plate = null;
   },
 };
 </script>
