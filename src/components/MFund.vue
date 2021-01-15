@@ -26,7 +26,7 @@
     style="margin-left: 100px"
     :icon="loading ? 'el-icon-loading' : 'el-icon-refresh'"
     @click="updataFundList(true)"
-    >点击刷新：{{ timeStr }}</el-button
+    >点击刷新：{{ refreshTime }}</el-button
   >
   <el-table :data="fundList" border style="margin-left: 20px; width: 96%">
     <el-table-column label="代码" min-width="6%">
@@ -258,7 +258,6 @@ export default defineComponent({
         } else {
           this.options = [];
         }
-        console.log("选项", this.options);
       } else {
         this.searchloading = false;
         this.options = [];
@@ -276,8 +275,8 @@ export default defineComponent({
     },
 
     async updataFundList(this: any, isLoading: boolean = false) {
-      this.isOpen || (this.isOpen = this.checkIsOpen());
-      if ((this.isOpen() && !this.loading) || isLoading) {
+      this.refreshTime = formatDateTime(new Date());
+      if (!this.loading || isLoading) {
         let dayProfit: number = 0;
         let rental: number = 0;
         let allProfit: number = 0;
@@ -333,27 +332,6 @@ export default defineComponent({
           }, 1000);
         }
       }
-    },
-
-    /**
-     * 判断当前是否开盘
-     */
-    checkIsOpen() {
-      let now = new Date();
-      let nowTime = now.getTime();
-      let year = now.getFullYear();
-      let month = now.getMonth() + 1;
-      let date = now.getDate();
-      let hour = now.getHours();
-      let minute = now.getMinutes();
-      let startStr = year + "/" + month + "/" + date + " " + "9:30:00";
-      let startTime = Date.parse(startStr);
-      return function (this: any) {
-        let now = new Date();
-        let nowTime = now.getTime();
-        this.timeStr = formatDateTime(now);
-        return nowTime >= startTime && hour < 15;
-      };
     },
 
     startTimer(this: any) {

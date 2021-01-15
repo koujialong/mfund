@@ -121,10 +121,10 @@ export default {
         this.location = params;
       });
 
-      this.getData(true);
       setTimeout(() => {
+        this.getData(true);
         bus.$on(TIMER.SECCB30, this.getData);
-      }, 2000);
+      }, 500);
     },
 
     changeMode(this: any, val: any) {
