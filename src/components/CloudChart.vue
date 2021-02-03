@@ -14,7 +14,7 @@
     <text style="margin-right: 24px; font-size: 34px; color: #f56c6c"
       >板块云图</text
     >
-    <el-radio-group fill="#f56c6c" v-model="tabMode" @change="changeMode">
+    <el-radio-group fill="#f56c6c" v-model="tabMode" @change="changeMode" v-if="pc">
       <el-radio-button label="rt">实时涨跌幅</el-radio-button>
       <el-radio-button label="week">近一周涨跌幅</el-radio-button>
       <el-radio-button label="month">近一月涨跌幅</el-radio-button>
@@ -32,8 +32,12 @@ import * as echarts from "echarts";
 import { log } from "echarts/lib/util/log";
 import bus from "@/utils/bus";
 import { TIMER } from "@/utils/timer";
+import { _isMobile } from "@/utils/utils";
 export default {
   name: "",
+  props:[
+    'pc'
+  ],
   data() {
     return {
       tabMode: "rt",
@@ -63,7 +67,7 @@ export default {
             itemStyle: {
               gapWidth: 1,
             },
-            roam: "move",
+            roam: this.pc?"move":"scale",
             breadcrumb: {
               show: true,
               top: "top",
@@ -162,7 +166,7 @@ export default {
             borderColor: color,
           };
         }
-        let fontSize = (root.scale / this.maxScale) * 800;
+        let fontSize = (root.scale / this.maxScale) * (this.pc?800:400);
         fontSize = fontSize > 10 ? fontSize : 10;
         root.value = root.scale;
         root.itemStyle = {

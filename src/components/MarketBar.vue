@@ -1,6 +1,6 @@
 <!-- 市场行情 -->
 <template>
-  <div class="chart-content" ref="marketChart"></div>
+  <div class="chart-content" :style="`width:${pc?33:96}%`" ref="marketChart"></div>
 </template>
 
 <script lang='ts'>
@@ -18,6 +18,9 @@ export default {
   data() {
     return {};
   },
+  props:[
+    'pc'
+  ],
   methods: {
     init(this: any) {
       this.chartEl = this.$refs.marketChart;
@@ -52,7 +55,7 @@ export default {
             zoomLock: true,
             xAxisIndex: [0],
             start: 0,
-            end: 25,
+            end: this.pc?25:20,
           },
         ],
         xAxis: {

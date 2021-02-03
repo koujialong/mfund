@@ -2,8 +2,8 @@
 <template>
   <div>
     <div class="chart" ref="mainCharts"></div>
-    <div>
-      <el-radio-group v-model="sltTimeRange" @change="changeTimeRange">
+    <div style="margin-left:30px">
+      <el-radio-group :size="pc?'':'mini'" v-model="sltTimeRange" @change="changeTimeRange">
         <el-radio-button label="y">月</el-radio-button>
         <el-radio-button label="3y">季</el-radio-button>
         <el-radio-button label="6y">半年</el-radio-button>
@@ -28,7 +28,7 @@ import * as echarts from "echarts";
 import { getFundDetailChart, getFundProfit } from "@/api/apiList";
 export default defineComponent({
   name: "",
-  props: ["chartType", "fundCode"],
+  props: ["chartType", "fundCode","pc"],
   data() {
     return {
       sltTimeRange: "y",
@@ -174,7 +174,7 @@ export default defineComponent({
 </script>
 <style scoped>
 .chart {
-  width: 600px;
+  width: 96%;
   height: 400px;
 }
 </style>

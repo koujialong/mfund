@@ -54,6 +54,8 @@ export default defineComponent({
         },
         grid: {
           top: 40,
+          left:50,
+          right:60,
           bottom: 30,
         },
         xAxis: {
@@ -207,7 +209,7 @@ export default defineComponent({
 </script>
 <style scoped>
 .chart {
-  width: 600px;
+  width: 100%;
   height: 400px;
 }
 </style>

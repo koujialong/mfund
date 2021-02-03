@@ -11,6 +11,7 @@
     :loading="searchloading"
     loading-text="正在查找基金..."
     no-data-text="未查找到基金"
+    :style="`width: 200px`"
   >
     <el-option
       v-for="item in options"
@@ -23,21 +24,49 @@
   <el-button type="primary" class="sub-btn" @click="addFund">确认</el-button>
   <el-button
     type="danger"
-    style="margin-left: 100px"
+    :style="`margin-left: ${pc?100:20}px`"
     :icon="loading ? 'el-icon-loading' : 'el-icon-refresh'"
     @click="updataFundList(true)"
     >点击刷新：{{ refreshTime }}</el-button
   >
-  <el-table :data="fundList" border style="margin-left: 20px; width: 96%">
-    <el-table-column label="代码" min-width="6%">
+
+  <div v-if="(!pc)&&(editIndex!=null)" style="margin-top:10px;margin-left:20px;width:80%">
+      <div class="input-label">
+        <div style="width:80px">
+            成本价：
+        </div>
+           <el-input
+                  style="width:auto"
+                  v-model="fundList[editIndex].cccb"
+                  type="number"
+                />
+      </div>
+      <div class="input-label" style="margin-top:10px;">
+        <div style="width:80px">
+          持仓份额：
+        </div>
+          <el-input
+          style="width:auto"
+          v-model="fundList[editIndex].hold"
+          type="number"
+        />
+      </div>    
+  </div>
+
+  <el-table
+    :data="fundList"
+    border
+    :style="`margin-left: 20px; width: ${pc?96:90}%; font-size:${pc ? 12 : 11}px;margin-top:${pc?0:20}px`"
+  >
+    <el-table-column label="代码" min-width="6%" v-if="pc">
       <template #default="scope">
         <span>{{ scope.row.fundcode }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="基金名称" min-width="12%">
+    <el-table-column label="基金名称" :min-width="`${pc?12:8}%`">
       <template #default="scope">
         <span
-          :style="`color:${scope.row.color};cursor:pointer`"
+          :style="`color:${scope.row.color};cursor:pointer;`"
           @mouseenter="scope.row.color = '#409EFF'"
           @mouseout="scope.row.color = '#606266'"
           @click="popDetail(scope.row.fundcode)"
@@ -45,7 +74,7 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="成本价" min-width="8%">
+    <el-table-column label="成本价" min-width="8%" v-if="pc">
       <template #default="scope">
         <el-input
           v-model="scope.row.cccb"
@@ -55,7 +84,7 @@
         <span v-else>{{ scope.row.cccb }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有份额" min-width="8%">
+    <el-table-column label="持有份额" min-width="8%" v-if="pc">
       <template #default="scope">
         <el-input
           v-model="scope.row.hold"
@@ -65,19 +94,19 @@
         <span v-else>{{ scope.row.hold }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持有总额" min-width="6%">
+    <el-table-column :label="`${pc?'持有总额':'总额'}`" min-width="6%">
       <template #default="scope">
         <span>{{ scope.row.holdPrice }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="持仓收益" min-width="6%">
+    <el-table-column label="持仓收益" min-width="6%" v-if="pc">
       <template #default="scope">
         <span :style="`color: ${scope.row.ccsy >= 0 ? 'red' : 'green'}`">{{
           scope.row.ccsy >= 0 ? `+${scope.row.ccsy}` : scope.row.ccsy
         }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="收益率" min-width="6%">
+    <el-table-column label="收益率" min-width="6%" v-if="pc">
       <template #default="scope">
         <span :style="`color: ${scope.row.ccsyl >= 0 ? 'red' : 'green'}`"
           >{{
@@ -86,12 +115,12 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="单位净值" min-width="6%">
+    <el-table-column label="单位净值" min-width="6%" v-if="pc">
       <template #default="scope">
         <span>{{ scope.row.NAV }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估算净值" min-width="6%">
+    <el-table-column label="估算净值" min-width="6%" v-if="pc">
       <template #default="scope">
         <span>{{ scope.row.GSZ }}</span>
       </template>
@@ -105,55 +134,62 @@
         >
       </template>
     </el-table-column>
-    <el-table-column label="预估收益" min-width="6%">
+    <el-table-column :label="`${pc?'预估收益':'收益'}`" min-width="6%">
       <template #default="scope">
         <span :style="`color: ${scope.row.gzsy >= 0 ? 'red' : 'green'}`">{{
           scope.row.gzsy >= 0 ? `+${scope.row.gzsy}` : scope.row.gzsy
         }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="估值时间" min-width="10%">
+    <el-table-column label="估值时间" min-width="10%" v-if="pc">
       <template #default="scope">
         <span>{{ scope.row.GZTIME }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="操作" min-width="10%">
+    <el-table-column label="操作" :min-width="`${pc?10:8}%`">
       <template #default="scope">
-        <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">{{
-          scope.row.isEdit ? "完成" : "编辑"
-        }}</el-button>
-        <el-button
-          size="mini"
-          type="danger"
-          @click="handleDelete(scope.$index, scope.row)"
-          >删除</el-button
-        >
+        <div :style="`flex-direction: ${pc?'row':'column'}`" class="btn-content">
+            <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">{{
+              scope.row.isEdit ? "完成" : "编辑"
+              }}</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              :style="`${pc?'':'margin-left:0;margin-top:4px'}`"
+              @click="handleDelete(scope.$index, scope.row)"
+              >删除</el-button>
+        </div>
+      
       </template>
     </el-table-column>
   </el-table>
-  <span class="info-tag">总额数据：</span>
-  <el-tag type="danger" effect="dark"> 持仓总额：{{ rental }} </el-tag>
-  <el-tag :type="allProfit >= 0 ? 'danger' : 'success'" effect="dark">
+  <div style="height:20px" v-if="!pc"></div>
+  <span class="info-tag" >总额数据：</span>
+  <br v-if="!pc"/>
+  <el-tag :class="`${pc?'el-tag-pc':'el-tag-m'}`" type="danger" effect="dark"> 持仓总额：{{ rental }} </el-tag>
+  <el-tag :type="allProfit >= 0 ? 'danger' : 'success'" effect="dark" :class="`${pc?'el-tag-pc':'el-tag-m'}`">
     持仓总收益：{{ allProfit >= 0 ? `+${allProfit}` : allProfit }}
   </el-tag>
-  <el-tag :type="allProfitRatio >= 0 ? 'danger' : 'success'" effect="dark">
+  <el-tag :type="allProfitRatio >= 0 ? 'danger' : 'success'" effect="dark" :class="`${pc?'el-tag-pc':'el-tag-m'}`">
     持仓总收益率：{{
       allProfitRatio >= 0 ? `+${allProfitRatio}` : allProfitRatio
     }}%
   </el-tag>
-  <span class="info-tag" style="margin-left: 100px">当日数据：</span>
-  <el-tag :type="dayProfit >= 0 ? 'danger' : 'success'" effect="dark">
+  <br v-if="!pc"/>
+  <span class="info-tag" :style="`margin-left: ${pc?100:20}px`">当日数据：</span>
+  <br v-if="!pc"/>
+  <el-tag :type="dayProfit >= 0 ? 'danger' : 'success'" effect="dark" :class="`${pc?'el-tag-pc':'el-tag-m'}`">
     当日预估收益：{{ dayProfit >= 0 ? `+${dayProfit}` : dayProfit }}
   </el-tag>
-  <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark">
+  <el-tag :type="rentalRatio >= 0 ? 'danger' : 'success'" effect="dark" :class="`${pc?'el-tag-pc':'el-tag-m'}`">
     当日预估收益率：{{ rentalRatio >= 0 ? `+${rentalRatio}` : rentalRatio }}%
   </el-tag>
-  <div style="display: flex; width: 100%; overflow: hidden">
-    <index-detail />
-    <market-line />
-    <market-bar />
+  <div :style="`display: ${pc?'flex':''}; width: 100%; overflow: hidden`">
+    <index-detail :pc="pc"/>
+    <market-line  :pc="pc"/>
+    <market-bar :pc="pc"/>
   </div>
-  <cloud-chart />
+  <cloud-chart :pc="pc"/>
 
   <el-dialog v-model="showPopDetail" destroy-on-close center>
     <fund-detail :fundCode="clickFundCode" />
@@ -171,7 +207,7 @@ import {
   defineComponent,
 } from "vue";
 import { getFundData, getFundDatas, getFunds, searchFund } from "@/api/apiList";
-import { formatDateTime } from "@/utils/utils";
+import { formatDateTime, _isMobile } from "@/utils/utils";
 import MarketBar from "@/components/MarketBar.vue";
 import MarketLine from "@/components/MarketLine.vue";
 import IndexDetail from "@/components/IndexDetail.vue";
@@ -220,6 +256,9 @@ export default defineComponent({
       showPopDetail: false,
       clickFundCode: 0,
     };
+  },
+  beforeMount(this:any){
+    this.pc = !_isMobile();
   },
   mounted(this: any) {
     let fundStr = window.localStorage.getItem("fund_list") || null;
@@ -356,16 +395,22 @@ export default defineComponent({
         fundItem.fundcode != item.fundcode && (fundItem.isEdit = false);
       });
       if (item.isEdit) {
+        this.editIndex=null;
         item.isEdit = false;
       } else {
+        this.editIndex=index;
         item.isEdit = true;
       }
       this.updataLocalFundList();
       this.updataFundList(true);
     },
     popDetail(this: any, code: number) {
-      this.clickFundCode = code;
-      this.showPopDetail = true;
+      if(this.pc){
+        this.clickFundCode = code;
+        this.showPopDetail = true;
+      }else{
+        this.$router.push({path:"/detail",query:{fundCode:code}})
+      }
     },
     getDeviceid() {
       return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
@@ -388,8 +433,12 @@ export default defineComponent({
 .sub-btn {
   margin-left: 20px;
 }
-.el-tag {
+.el-tag-pc {
   margin: 20px 0 20px 20px;
+}
+
+.el-tag-m {
+  margin: 10px 0 10px 20px;
 }
 .info-tag {
   height: 32px;
@@ -397,5 +446,16 @@ export default defineComponent({
   color: #f56c6c;
   font-size: 16px;
   margin-left: 20px;
+}
+.btn-content{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.input-label{
+  display: flex;
+  align-items: center;
+  color: #f56c6c;
+  font-size: 14px;
 }
 </style>

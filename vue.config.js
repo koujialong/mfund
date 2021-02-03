@@ -38,7 +38,7 @@ module.exports = {
                 'vue-router': 'VueRouter',
                 axios: 'axios',
                 echarts: 'echarts',
-                'element-plus': 'ElementPlus',
+                'element-plus': 'element-plus',
             })
             config.plugin('html').tap(args => {
                 args[0].isProd = true

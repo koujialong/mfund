@@ -1,7 +1,7 @@
 <template>
   <div class="box">
     <div v-if="infoData.FCODE" class="content-box">
-      <div class="hisrank-row content-box-div">
+      <div class="hisrank-row content-box-div" :style="`font-size:${pc?16:12}px`">
         <div class="hisrank-row-div">
           <div>近1月(排名)</div>
           <p :class="infoData.SYL_Y > 0 ? 'up' : 'down'">
@@ -130,7 +130,10 @@ export default defineComponent({
 }
 .hisrank-row-div {
   text-align: center;
-  margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .content-box-div {
   padding: 0 20px;

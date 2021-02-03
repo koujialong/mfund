@@ -10,11 +10,11 @@
     border
     class="table"
     row-class-name="row-content"
-    style="width: 100%"
+    style="width: 100%;font-size:10px"
   >
-    <el-table-column label="股票名称（代码）" min-width="32%">
+    <el-table-column :label="pc?'股票名称（代码）':'股票名称'" :min-width="pc?'32%':'16%'">
       <template #default="scope">
-        <span>{{ `${scope.row.GPJC}(${scope.row.GPDM})` }}</span>
+        <span>{{ `${scope.row.GPJC}${pc?('('+scope.row.GPDM+')'):''}` }}</span>
       </template>
     </el-table-column>
     <el-table-column label="价格" min-width="16%">
@@ -56,14 +56,14 @@ export default {
       dataListGp: [],
     };
   },
-  props: {
-    fundCode: {
-      type: String,
-      required: true,
-    },
-  },
+  props: [
+    'fundCode',
+    'pc'
+  ],
   methods: {
     init(this: any) {
+      console.log('pc',this.pc);
+      
       this.getData();
     },
 

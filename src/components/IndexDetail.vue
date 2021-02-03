@@ -1,6 +1,6 @@
 <!-- 指数详情 -->
 <template>
-  <div class="chart" ref="mainCharts"></div>
+  <div class="chart" :style="`width:${pc?33:96}%`" ref="mainCharts"></div>
 </template>
 
 <script lang='ts'>
@@ -18,6 +18,9 @@ export default {
       prePrice: 0,
     };
   },
+  props:[
+    'pc'
+  ],
   methods: {
     init(this: any, val: any) {
       this.code = val.f13 + "." + val.f12;
